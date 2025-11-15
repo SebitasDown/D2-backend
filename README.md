@@ -10,5 +10,4 @@
 
 ## Tablero Kanban
 
-[![Captura-desde-2025-11-10-21-31-17.png](https://i.postimg.cc/3rknnxc5/Captura-desde-2025-11-10-21-31-17.png)](https://postimg.cc/PNkWqTH2)
-[link]
+[![image-2025-11-15-153321363.png](https://i.postimg.cc/59hWtqj8/image-2025-11-15-153321363.png)](https://postimg.cc/9zYn89df)
