@@ -1,6 +1,6 @@
 package com.backend.d2.repositories.impl;
 
-import com.backend.d2.models.Sale;
+import com.backend.d2.entity.Sale;
 import com.backend.d2.repositories.interfaces.DataSaleRepository;
 import com.backend.d2.repositories.interfaces.ISaleRepository;
 import lombok.RequiredArgsConstructor;

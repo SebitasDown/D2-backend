@@ -1,6 +1,6 @@
 package com.backend.d2.dtos.sales.responses;
 
-import com.backend.d2.models.PaymentMethod;
+import com.backend.d2.entity.PaymentMethod;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.math.BigDecimal;

@@ -1,4 +1,4 @@
-package com.backend.d2.models;
+package com.backend.d2.entity;
 
 import lombok.Data;
 import jakarta.persistence.*;

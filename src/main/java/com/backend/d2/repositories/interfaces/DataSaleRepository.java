@@ -1,6 +1,6 @@
 package com.backend.d2.repositories.interfaces;
 
-import com.backend.d2.models.Sale;
+import com.backend.d2.entity.Sale;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
