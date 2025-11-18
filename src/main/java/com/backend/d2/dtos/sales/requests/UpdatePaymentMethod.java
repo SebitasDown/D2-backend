@@ -5,7 +5,7 @@ package com.backend.d2.dtos.sales.requests;
 // actualizar el metodo de pago (Task-003)
 // ------------------------------------------------------------
 
-import com.backend.d2.models.PaymentMethod;
+import com.backend.d2.entity.PaymentMethod;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 

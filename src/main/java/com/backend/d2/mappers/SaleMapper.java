@@ -1,8 +1,7 @@
 package com.backend.d2.mappers;
 
-import com.backend.d2.dtos.sales.responses.SaleItemResponse;
 import com.backend.d2.dtos.sales.responses.SaleResponse;
-import com.backend.d2.models.Sale;
+import com.backend.d2.entity.Sale;
 // import com.backend.d2.models.ShoppingCar;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

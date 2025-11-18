@@ -7,7 +7,7 @@ import com.backend.d2.dtos.sales.responses.SaleResponse;
 import com.backend.d2.exceptions.BadRequestException;
 import com.backend.d2.exceptions.ResourceNotFoundException;
 import com.backend.d2.mappers.SaleMapper;
-import com.backend.d2.models.*;
+import com.backend.d2.entity.*;
 // import com.backend.d2.repositories.interfaces.IProductRepository;
 import com.backend.d2.repositories.interfaces.ISaleRepository;
 // import com.backend.d2.repositories.interfaces.IShoppingCarRepository;
@@ -17,10 +17,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor // Inyecta todas las dependencias (final)

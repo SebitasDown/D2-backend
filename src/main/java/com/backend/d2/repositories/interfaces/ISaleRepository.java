@@ -1,6 +1,6 @@
 package com.backend.d2.repositories.interfaces;
 
-import com.backend.d2.models.Sale;
+import com.backend.d2.entity.Sale;
 import java.util.List;
 import java.util.Optional;
 
