@@ -1,6 +1,6 @@
 package com.backend.d2.repositories.impl;
 
-import com.backend.d2.entity.ShoppingCar;
+import com.backend.d2.entity.ShoppingCarEntity;
 import com.backend.d2.repositories.interfaces.DataShoppingCarRepository;
 import com.backend.d2.repositories.interfaces.IShoppingCarRepository;
 import lombok.RequiredArgsConstructor;
@@ -16,27 +16,27 @@ public class ShoppingCarRepositoryImpl implements IShoppingCarRepository {
     private final DataShoppingCarRepository jpaRepository;
 
     @Override
-    public ShoppingCar save(ShoppingCar item) {
+    public ShoppingCarEntity save(ShoppingCarEntity item) {
         return jpaRepository.save(item);
     }
 
     @Override
-    public List<ShoppingCar> saveAll(Iterable<ShoppingCar> items) {
+    public List<ShoppingCarEntity> saveAll(Iterable<ShoppingCarEntity> items) {
         return jpaRepository.saveAll(items);
     }
 
     @Override
-    public Optional<ShoppingCar> findById(Long id) {
+    public Optional<ShoppingCarEntity> findById(Long id) {
         return jpaRepository.findById(id);
     }
 
     @Override
-    public List<ShoppingCar> findByCashierIdAndSaleIsNull(Long cashierId) {
+    public List<ShoppingCarEntity> findByCashierIdAndSaleIsNull(Long cashierId) {
         return jpaRepository.findByCashierIdAndSaleIsNull(cashierId);
     }
 
     @Override
-    public Optional<ShoppingCar> findActiveItemByCashierAndProduct(Long cashierId, Long productId) {
+    public Optional<ShoppingCarEntity> findActiveItemByCashierAndProduct(Long cashierId, Long productId) {
         // Aquí hacemos la conexión:
         // La interfaz dice 'findActiveItem...' (nombre corto/semántico)
         // JPA usa 'findByCashierIdAndProductIdAndSaleIsNull' (nombre técnico SQL)
@@ -44,17 +44,17 @@ public class ShoppingCarRepositoryImpl implements IShoppingCarRepository {
     }
 
     @Override
-    public List<ShoppingCar> findBySaleId(Long saleId) {
+    public List<ShoppingCarEntity> findBySaleId(Long saleId) {
         return jpaRepository.findBySaleId(saleId);
     }
 
     @Override
-    public void delete(ShoppingCar item) {
+    public void delete(ShoppingCarEntity item) {
         jpaRepository.delete(item);
     }
 
     @Override
-    public void deleteAll(Iterable<ShoppingCar> items) {
+    public void deleteAll(Iterable<ShoppingCarEntity> items) {
         jpaRepository.deleteAll(items);
     }
 
