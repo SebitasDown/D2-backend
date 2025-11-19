@@ -5,14 +5,18 @@ import com.backend.d2.mappers.ProductMapper;
 import com.backend.d2.models.ProductModel;
 import com.backend.d2.repositories.interfaces.ProductRepositoryInterface;
 import com.backend.d2.repositories.jpa.JpaProductRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
+@Repository
+@RequiredArgsConstructor
 public class ProductRepositoryImpl implements ProductRepositoryInterface {
     // Inyeccion de Jpa
-    private JpaProductRepository jpaProductRepository;
+    private final JpaProductRepository jpaProductRepository;
 
     @Override
     public ProductModel save(ProductModel productModel) {
@@ -63,5 +67,30 @@ public class ProductRepositoryImpl implements ProductRepositoryInterface {
 
         //Convertir Page<ProductEntity> a Page<ProductModel>
         return pageEntity.map(ProductMapper.INSTANCE::toEModel);
+    }
+
+    @Override
+    public Page<ProductModel> findAll(Pageable pageable) {
+        return jpaProductRepository.findAll(pageable)
+                .map(ProductMapper.INSTANCE::toEModel);
+    }
+
+    @Override
+    public Page<ProductModel> findByFilters(String name, Long categoryId, Long supplierId, Pageable pageable) {
+        Page<ProductEntity> page;
+
+        if(name != null && categoryId != null && supplierId != null){
+            page = jpaProductRepository.findByNameContainingIgnoreCaseAndCategoryIdAndSupplierId(name, categoryId, supplierId, pageable);
+        } else if(name != null && categoryId != null){
+            page = jpaProductRepository.findByNameContainingIgnoreCaseAndCategoryId(name, categoryId, pageable);
+        } else if(name != null && supplierId != null){
+            page = jpaProductRepository.findByNameContainingIgnoreCaseAndSupplierId(name, supplierId, pageable);
+        } else if(name != null){
+            page = jpaProductRepository.findByNameContainingIgnoreCase(name, pageable);
+        } else {
+            page = jpaProductRepository.findAll(pageable);
+        }
+
+        return page.map(ProductMapper.INSTANCE::toEModel);
     }
 }

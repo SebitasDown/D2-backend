@@ -19,9 +19,10 @@ import org.springframework.web.bind.annotation.*;
 
 @Controller
 @RequestMapping("/product")
+@RequiredArgsConstructor
 public class ProductController{
 
-    private SaleMapper saleMapper;
+    private final SaleMapper saleMapper;
 
     // inyeccion de Servicio
     private ProductServiceInterface productServiceInterface;
@@ -91,5 +92,22 @@ public class ProductController{
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    
+    @GetMapping("/list")
+    public ResponseEntity<Page<ProductSearchResponseDTO>> listProducts (
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) Long categoryId,
+            @RequestParam(required = false) Long supplierId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "name") String sortBy
+    ){
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy));
+
+        Page<ProductModel> pageModel =productServiceInterface.listAll(name, categoryId, supplierId, pageable);
+
+        // Tambien se puede hacer asi
+      // Page<ProductSearchResponseDTO> pageResponseDTO = pageModel.map(model ->ProductMapper.INSTANCE.toSearchDTO(model));
+        Page<ProductSearchResponseDTO> pageResponseDTO = pageModel.map(ProductMapper.INSTANCE::toSearchDTO);
+        return ResponseEntity.status(HttpStatus.OK).body(pageResponseDTO);
+    }
 }

@@ -10,4 +10,5 @@ public interface ProductServiceInterface {
     ProductModel deleteById(Long id);
     ProductModel findById (Long id);
     Page<ProductModel> findByName(String name, Pageable pageable);
+    Page<ProductModel> listAll(String name, Long categoryId, Long supplierId, Pageable pageable);
 }

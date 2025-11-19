@@ -18,4 +18,13 @@ public interface JpaProductRepository extends JpaRepository<ProductEntity, Long>
     // JOINs para mostrar informacion
     @EntityGraph(attributePaths = {"category", "supplier"})
     Page<ProductEntity> findByNameContainingIgnoreCase(String name, Pageable pageable);
+
+    // Pageable para buscar a todos
+    Page<ProductEntity> findAll (Pageable pageable);
+
+    Page<ProductEntity> findByNameContainingIgnoreCaseAndCategoryId(String name, Long categoryId, Pageable pageable);
+
+    Page<ProductEntity> findByNameContainingIgnoreCaseAndSupplierId(String name, Long supplierId, Pageable pageable);
+
+    Page<ProductEntity> findByNameContainingIgnoreCaseAndCategoryIdAndSupplierId(String name, Long categoryId, Long supplierId, Pageable pageable);
 }

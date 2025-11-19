@@ -3,15 +3,19 @@ package com.backend.d2.services.impl;
 import com.backend.d2.models.ProductModel;
 import com.backend.d2.repositories.interfaces.ProductRepositoryInterface;
 import com.backend.d2.services.interfaces.ProductServiceInterface;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
+@RequiredArgsConstructor
+@Service
 public class ProductServiceImpl implements ProductServiceInterface {
 
     // Inyeccion de ProductRepositorio
-    private ProductRepositoryInterface productRepository;
+    private final ProductRepositoryInterface productRepository;
     // Inyeccion de Repositorio para Category y supplier
 
     @Override
@@ -105,7 +109,7 @@ public class ProductServiceImpl implements ProductServiceInterface {
     @Override
     public ProductModel findById(Long id) {
         return productRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Producto no encontrado"))
+                .orElseThrow(() -> new IllegalArgumentException("Producto no encontrado"));
     }
 
     @Override
@@ -116,4 +120,38 @@ public class ProductServiceImpl implements ProductServiceInterface {
         }
         return result;
     }
+
+    @Override
+    public Page<ProductModel> listAll(String name, Long categoryId, Long supplierId, Pageable pageable) {
+        // Implementacion de filtros
+        return productRepository.findByFilters(name, categoryId, supplierId, pageable);
+    }
+
+    // validaciones de stock para carrito
+    public ProductModel checkStockAndUpdate(Long productId, int cantidad){
+        ProductModel product = productRepository.findById(productId)
+                .orElseThrow(()-> new IllegalArgumentException("No hay suficiente stock")); // manejar diferente los errores
+        if (product.getStock() < cantidad){
+            throw new IllegalArgumentException("No hay suficiente stock"); // Error personalizado
+        }
+        if(product.getStock() == 0) {
+            throw new IllegalStateException("Producto agotado");
+        }
+
+        int nuevoStock = product.getStock() - cantidad;
+        product.setStock(nuevoStock);
+
+        if(nuevoStock == 0) {
+            // Error personalizado
+        } else if(nuevoStock < 10) {
+            // Error personalizado
+        }
+
+        productRepository.save(product);
+
+        return product;
+
+    }
+
+
 }
