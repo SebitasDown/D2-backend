@@ -14,10 +14,11 @@ import com.backend.d2.models.ProductModel;
 import com.backend.d2.models.SaleModel;
 //import com.backend.d2.models.ShoppingCar;
 import com.backend.d2.models.UserModel;
+import com.backend.d2.entity.Role;
 import com.backend.d2.repositories.interfaces.ProductRepositoryInterface;
 import com.backend.d2.repositories.interfaces.ISaleRepository;
 //import com.backend.d2.repositories.interfaces.IShoppingCarRepository;
-//import com.backend.d2.repositories.interfaces.IUserRepository;
+import com.backend.d2.repositories.interfaces.IUserRepository;
 import com.backend.d2.services.interfaces.ISaleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -191,6 +192,79 @@ public class SaleServiceImpl implements ISaleService {
         // Task-004: Retornar array (mapeado a DTO)
         return saleMapper.toSaleResponseList(sales);
 
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public SaleResponse getSaleById(Long saleId, UserModel currentUser) {
+        // Task-005: Buscar venta por id
+        Optional<SaleModel> saleOpt;
+
+        // Task-005: MANAGER/ADMIN pueden ver cualquier venta
+        if (currentUser.getRole() == Role.ADMIN || currentUser.getRole() == Role.MANAGER) {
+            saleOpt = saleRepository.findById(saleId);
+        }
+        // Task-005: CASHIER solo ve las ventas realizadas por el
+        else if (currentUser.getRole() == Role.CASHIER) {
+            saleOpt = saleRepository.findByIdAndCashierId(saleId, currentUser.getId());
+        }
+        else {
+            throw new BadRequestException("Access denied. Role not recognized");
+        }
+
+        SaleModel sale = saleOpt
+            .orElseThrow(() -> new ResourceNotFoundException("Sale not found or you do not have permission to view it"));
+
+        return saleMapper.toSaleResponse(sale);
+    }
+
+    @Override
+    @Transactional
+    public void deleteSale(Long saleId, UserModel currentUser) {
+        // Task-006: Validar que solo ADMIN PUEDA EJECUTAR
+        if (currentUser.getRole() != Role.ADMIN) {
+            throw new BadRequestException("Access denied. Only ADMIN can delete sales");
+        }
+
+        SaleModel sale = saleRepository.findById(saleId)
+                .orElseThrow(() -> new ResourceNotFoundException("Sale not found"));
+
+        // Task-006: Obtener productos de la venta
+        // List<ShoppingCar> saleItems = shoppingCarRepository.findBySaleId(saleId);
+
+        // Task-006: Revertir Stock (si la venta no estaba ya cancelada)
+//        if (!sale.isCancelled()) {
+//            for (ShoppingCar item : saleItems) {
+//                Product product = item.getProduct();
+//                product.setStock(product.getStock() + item.getQuantity());
+//                productRepository.save(product);
+//            }
+//        }
+
+        // shoppingCarRepository.deleteAll(saleItems);
+        saleRepository.delete(sale);
+    }
+
+    @Override
+    @Transactional
+    public SaleResponse updateSale(Long saleId, SaleResponse dto, UserModel currentUser) {
+        // Task-007: Validar que solo ADMIN puede ejecutar
+        if (currentUser.getRole() != Role.ADMIN) {
+            throw new BadRequestException("Access denied. Only ADMIN can update sales");
+        }
+
+        SaleModel sale = saleRepository.findById(saleId)
+                .orElseThrow(() -> new ResourceNotFoundException("Sale not found"));
+
+        // Task-007: Actualizar campos en sale
+        sale.setCashMethod(dto.getCashMethod());
+        sale.setTotal(dto.getTotal()); // Como pide la Task-007 (Admin puede ajustar)
+        sale.setCancelled(dto.isCancelled());
+
+        SaleModel updatedSale = saleRepository.save(sale);
+
+        // Task-007: Retornar venta actualizada
+        return saleMapper.toSaleResponse(updatedSale);
     }
 
 //    @Override
