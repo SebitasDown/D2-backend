@@ -1,14 +1,19 @@
 package com.backend.d2.entity;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import jakarta.persistence.*;
+import lombok.NoArgsConstructor;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Data
 @Entity
+@AllArgsConstructor
+@NoArgsConstructor
 @Table(name = "sale")
-public class Sale {
+public class SaleEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -17,7 +22,7 @@ public class Sale {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_cashier", referencedColumnName = "id_user")
-    //private User cashier;
+    //private UserEntity cashier;
 
     @Column(nullable = false)
     private BigDecimal total;

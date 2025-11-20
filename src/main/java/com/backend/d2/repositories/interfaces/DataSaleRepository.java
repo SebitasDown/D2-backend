@@ -1,6 +1,6 @@
 package com.backend.d2.repositories.interfaces;
 
-import com.backend.d2.entity.Sale;
+import com.backend.d2.entity.SaleEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface DataSaleRepository extends JpaRepository<Sale, Long> {
+public interface DataSaleRepository extends JpaRepository<SaleEntity, Long> {
 
     // Para Task-004
     // Listar ventas con JOIN a User y filtro
@@ -18,13 +18,13 @@ public interface DataSaleRepository extends JpaRepository<Sale, Long> {
             "WHERE CAST(s.id AS string) LIKE %:searchTerm% OR " +
             "LOWER(c.name) LIKE LOWER(CONCAT('%', :searchTerm, '%')) " +
             "ORDER BY s.purchaseDate DESC")
-    List<Sale> searchSalesWithCashier(@Param("searchTerm") String searchTerm);
+    List<SaleEntity> searchSalesWithCashier(@Param("searchTerm") String searchTerm);
 
     // Cuando el buscador está vacío
     @Query("SELECT s FROM Sale s JOIN FETCH s.cashier ORDER BY s.purchaseDate DESC")
-    List<Sale> findAllSalesWithCashier();
+    List<SaleEntity> findAllSalesWithCashier();
 
     // Para Task-005
     // CASHIER solo ve sus ventas
-    Optional<Sale> findByIdAndCashierId(Long saleId, Long cashierId);
+    Optional<SaleEntity> findByIdAndCashierId(Long saleId, Long cashierId);
 }
