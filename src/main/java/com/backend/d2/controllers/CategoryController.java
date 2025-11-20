@@ -7,6 +7,8 @@ import com.backend.d2.models.CategoryModel;
 import com.backend.d2.services.interfaces.CategoryServiceInterface;
 import com.backend.d2.services.interfaces.ProductServiceInterface;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -56,6 +58,18 @@ public class CategoryController {
         categoryServiceInterface.deleteById(id);
         Map<String, String> response = new HashMap<>();
         response.put("message","Categoria eliminada correctamente");
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    // Metodo con Pageable y filtro dinamico
+    @GetMapping("/list")
+    public ResponseEntity<Page<CategoryResponseDTO>> list (
+            @RequestParam(required = false) String name,
+            Pageable pageable
+    ){
+        Page<CategoryModel> result = categoryServiceInterface.findAll(name, pageable);
+        Page<CategoryResponseDTO> response = result.map(CategoryMapper.INSTANCE::modelToResponse);
+
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
