@@ -13,7 +13,7 @@ import com.backend.d2.mappers.SaleMapper;
 import com.backend.d2.models.ProductModel;
 import com.backend.d2.models.SaleModel;
 //import com.backend.d2.models.ShoppingCar;
-// import com.backend.d2.models.UserModel;
+import com.backend.d2.models.UserModel;
 import com.backend.d2.repositories.interfaces.ProductRepositoryInterface;
 import com.backend.d2.repositories.interfaces.ISaleRepository;
 //import com.backend.d2.repositories.interfaces.IShoppingCarRepository;

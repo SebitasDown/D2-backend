@@ -1,7 +1,6 @@
 package com.backend.d2.controllers;
 
 import com.backend.d2.dtos.sales.requests.ProcessSaleRequest;
-import com.backend.d2.dtos.sales.requests.SaleFilterRequest;
 import com.backend.d2.dtos.sales.requests.UpdatePaymentMethod;
 import com.backend.d2.dtos.sales.responses.ProcessSaleResponse;
 import com.backend.d2.dtos.sales.responses.SaleResponse;
@@ -139,15 +138,6 @@ public class SaleController {
         // La lógica de "solo ADMIN" está en el servicio
 //        SaleResponse updatedSale = saleService.updateSale(saleId, dto, currentUser);
 //        return ResponseEntity.ok(updatedSale);
-
-        return null;
-    }
-
-    // Endpoint con filter
-    @GetMapping("/list-mount")
-    // agregar dto de respuesta en response
-    public ResponseEntity<?> listMount(@RequestBody SaleFilterRequest filter){
-
 
         return null;
     }

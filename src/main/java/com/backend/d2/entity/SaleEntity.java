@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import jakarta.persistence.*;
 import lombok.NoArgsConstructor;
-import org.springframework.data.jpa.repository.Query;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -23,7 +22,7 @@ public class SaleEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_cashier", referencedColumnName = "id_user")
-    //private UserEntity cashier;
+    private UserEntity cashier;
 
     @Column(nullable = false)
     private BigDecimal total;
