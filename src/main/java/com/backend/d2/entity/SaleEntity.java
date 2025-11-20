@@ -16,9 +16,6 @@ import java.time.LocalDate;
 @Table(name = "sale")
 public class SaleEntity {
 
-//    @NamedQueries()
-
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_sale")

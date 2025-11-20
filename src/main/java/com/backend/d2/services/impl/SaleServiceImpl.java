@@ -13,7 +13,6 @@ import com.backend.d2.mappers.SaleMapper;
 import com.backend.d2.models.ProductModel;
 import com.backend.d2.models.SaleModel;
 //import com.backend.d2.models.ShoppingCar;
-//import com.backend.d2.models.User;
 // import com.backend.d2.models.UserModel;
 import com.backend.d2.repositories.interfaces.ProductRepositoryInterface;
 import com.backend.d2.repositories.interfaces.ISaleRepository;
@@ -72,7 +71,7 @@ public class SaleServiceImpl implements ISaleService {
         // Task-001: Crear registro en la tabla sale
 
         // Crear el MODELO de negocio (SaleModel)
-//        Sale newSale = new Sale();
+//        SaleModel newSale = new SaleModel();
 
 //        newSale.setCashier(cashier);
 //        newSale.setTotal(total);
@@ -81,14 +80,20 @@ public class SaleServiceImpl implements ISaleService {
 //        newSale.setCancelled(false);
 //
          // Guarda usando el repositorio que acepta y devuelve los modelos
-//        Sale savedSale = saleRepository.save(newSale);
+//        SaleModel savedSale = saleRepository.save(newSale);
 
         // Task-001: Actualizar Stock y Asociar carrito a venta
+
+        // Como ShoppingCar (Entity) necesita una SaleEntity para la relación,
+        // pero nosotros tenemos un SaleModel, creamos una referencia temporal
+//        SaleEntity saleReference = new SaleEntity();
+//        saleReference.setId(savedSale.getId());
+
 //        for (ShoppingCar item : cartItems) {
 //            Product product = item.getProduct();
 //            product.setStock(product.getStock() - item.getQuantity());
 //            productRepository.save(product); // Guarda el stock actualizado
-//            item.setSale(savedSale); // Asocia el item del carrito a la nueva venta
+//            item.setSale(saleReference); // Asocia usando la referencia
 //        }
 //        shoppingCarRepository.saveAll(cartItems); // Guarda los cambios en el carrito
 

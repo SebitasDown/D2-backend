@@ -1,14 +1,14 @@
 package com.backend.d2.controllers;
 
 import com.backend.d2.dtos.sales.requests.ProcessSaleRequest;
+import com.backend.d2.dtos.sales.requests.SaleFilterRequest;
 import com.backend.d2.dtos.sales.requests.UpdatePaymentMethod;
 import com.backend.d2.dtos.sales.responses.ProcessSaleResponse;
 import com.backend.d2.dtos.sales.responses.SaleResponse;
-//import com.backend.d2.models.User;
+//import com.backend.d2.models.UserModel;
 import com.backend.d2.services.interfaces.ISaleService;
 //import com.backend.d2.services.interfaces.IUserService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -37,14 +37,13 @@ public class SaleController {
 //        }
 //        // Buscamos al usuario real
 //        return userService.findById(userId)
-//                .orElseGet(() -> userService.getTestUser(userId, User.Role.CASHIER));
+//                .orElseThrow(() -> new BadRequestException("User not found with ID: " + userId));
 //    }
 
 
-    /**
-     * Task-001: Crear endpoint procesar venta (POST)
-     * Accesible para todos los roles
-     */
+    //Task-001: Crear endpoint procesar venta (POST)
+    // Accesible para todos los roles
+
     @PostMapping("/process")
     public ResponseEntity<ProcessSaleResponse> processSale(
             @RequestBody ProcessSaleRequest request,
@@ -58,10 +57,8 @@ public class SaleController {
         return null;
     }
 
-    /**
-     * Task-002: Crear endpoint cancelar venta (PATCH)
-     * Accesible para todos los roles
-     */
+    // Task-002: Crear endpoint cancelar venta (PATCH)
+    // Accesible para todos los roles
     @PatchMapping("/{saleId}/cancel")
     public ResponseEntity<SaleResponse> cancelSale(
             @PathVariable Long saleId,
@@ -73,10 +70,8 @@ public class SaleController {
         return null;
     }
 
-    /**
-     * Task-003: Crear endpoint actualizar metodo de pago (PATCH)
-     * Accesible para todos los roles
-     */
+    // Task-003: Crear endpoint actualizar metodo de pago (PATCH)
+    // Accesible para todos los roles
     @PatchMapping("/{saleId}/payment-method")
     public ResponseEntity<SaleResponse> updatePaymentMethod(
             @PathVariable Long saleId,
@@ -89,9 +84,8 @@ public class SaleController {
         return null;
     }
 
-    /**
-     * Task-004: Crear endpoint para listar ventas (GET)
-     */
+    // Task-004: Listar ventas con buscador (GET)
+    // Ejemplo: /api/v1/sales?searchTerm=juan
     @GetMapping
     public ResponseEntity<List<SaleResponse>> listSales(
             @RequestParam(required = false) String search) {
@@ -100,11 +94,9 @@ public class SaleController {
         return ResponseEntity.ok(sales);
     }
 
-    /**
-     * Task-005: Crear endpoint venta por ID (GET)
-     * MANAGER/ADMIN pueden ver cualquier venta
-     * CASHIER solo ve las ventas realizadas por él
-     */
+    //Task-005: Crear endpoint venta por ID (GET)
+    // Valida roles (Cashier solo ve las suyas, Admin ve todas)
+
     @GetMapping("/{saleId}")
     public ResponseEntity<SaleResponse> getSaleById(
             @PathVariable Long saleId,
@@ -119,10 +111,7 @@ public class SaleController {
         return null;
     }
 
-    /**
-     * Task-006: Crear endpoint para eliminar venta (DELETE)
-     * Solo accesible para ADMIN
-     */
+    // Task-006: Crear endpoint para eliminar venta (DELETE) -> solo accesible para ADMIN
     @DeleteMapping("/{saleId}")
     public ResponseEntity<Void> deleteSale(
             @PathVariable Long saleId,
@@ -137,10 +126,7 @@ public class SaleController {
         return null;
     }
 
-    /**
-     * Task-007: Crear endpoint actualizar venta (PATCH)
-     * Solo accesible para ADMIN
-     */
+    // Task-007: Crear endpoint actualizar venta (PATCH) -> Admin
     @PatchMapping("/{saleId}")
     public ResponseEntity<SaleResponse> updateSale(
             @PathVariable Long saleId,
@@ -153,6 +139,15 @@ public class SaleController {
         // La lógica de "solo ADMIN" está en el servicio
 //        SaleResponse updatedSale = saleService.updateSale(saleId, dto, currentUser);
 //        return ResponseEntity.ok(updatedSale);
+
+        return null;
+    }
+
+    // Endpoint con filter
+    @GetMapping("/list-mount")
+    // agregar dto de respuesta en response
+    public ResponseEntity<?> listMount(@RequestBody SaleFilterRequest filter){
+
 
         return null;
     }
