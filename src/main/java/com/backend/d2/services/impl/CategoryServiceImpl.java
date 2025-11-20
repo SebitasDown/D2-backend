@@ -57,5 +57,10 @@ public class CategoryServiceImpl implements CategoryServiceInterface {
         return categoryRepositoryInterface.findAll(name, pageable);
     }
 
+    @Override
+    public Page<CategoryModel> listAll(Pageable pageable) {
+        return categoryRepositoryInterface.findFilterPage(pageable);
+    }
+
 
 }

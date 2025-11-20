@@ -1,6 +1,7 @@
 package com.backend.d2.repositories.impl;
 
 import com.backend.d2.entity.CategoryEntity;
+import com.backend.d2.entity.ProductEntity;
 import com.backend.d2.mappers.CategoryMapper;
 import com.backend.d2.models.CategoryModel;
 import com.backend.d2.repositories.interfaces.CategoryRepositoryInterface;
@@ -65,5 +66,13 @@ public class CategoryRepositoryImpl implements CategoryRepositoryInterface {
                 .allOf(CategorySpecification.nameLike(name));
         return jpaCategoryInterface.findAll(spec, pageable)
                 .map(CategoryMapper.INSTANCE::entityToModel);
+    }
+
+    @Override
+    public Page<CategoryModel> findFilterPage(Pageable pageable) {
+        Page<CategoryEntity> page;
+
+        page = jpaCategoryInterface.findAll(pageable);
+        return page.map(CategoryMapper.INSTANCE::entityToModel);
     }
 }

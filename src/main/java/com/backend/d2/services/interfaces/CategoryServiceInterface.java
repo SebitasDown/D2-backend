@@ -9,4 +9,5 @@ public interface CategoryServiceInterface {
     CategoryModel update(CategoryModel categoryModel);
     boolean deleteById(Long id);
     Page<CategoryModel> findAll (String name, Pageable pageable);
+    Page<CategoryModel> listAll(Pageable pageable);
 }

@@ -8,7 +8,9 @@ import com.backend.d2.services.interfaces.CategoryServiceInterface;
 import com.backend.d2.services.interfaces.ProductServiceInterface;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -71,6 +73,21 @@ public class CategoryController {
         Page<CategoryResponseDTO> response = result.map(CategoryMapper.INSTANCE::modelToResponse);
 
         return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    // Lista de categorias
+    @GetMapping("/listAll")
+    public ResponseEntity<Page<CategoryResponseDTO>> listCategory (
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10")int size,
+            @RequestParam(defaultValue = "name") String sortBy
+    ){
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy));
+
+        Page<CategoryModel> pageModel = categoryServiceInterface.listAll(pageable);
+
+        Page<CategoryResponseDTO> pageResponseDTO = pageModel.map(CategoryMapper.INSTANCE::modelToResponse);
+        return ResponseEntity.status(HttpStatus.OK).body(pageResponseDTO);
     }
 
 }

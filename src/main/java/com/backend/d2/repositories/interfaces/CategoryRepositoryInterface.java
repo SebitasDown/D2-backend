@@ -12,4 +12,5 @@ public interface CategoryRepositoryInterface {
     CategoryModel update(CategoryModel categoryModel);
     boolean delteById(Long id);
     Page<CategoryModel> findAll(String name, Pageable pageable);
+    Page<CategoryModel> findFilterPage (Pageable pageable);
 }
