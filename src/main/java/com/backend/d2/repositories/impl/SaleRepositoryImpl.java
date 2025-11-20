@@ -3,9 +3,12 @@ package com.backend.d2.repositories.impl;
 import com.backend.d2.entity.SaleEntity;
 import com.backend.d2.mappers.SaleMapper;
 import com.backend.d2.models.SaleModel;
-import com.backend.d2.repositories.interfaces.DataSaleRepository;
 import com.backend.d2.repositories.interfaces.ISaleRepository;
+import com.backend.d2.repositories.interfaces.jpa.JpaSaleRepository;
+import com.backend.d2.repositories.specifications.SaleSpecification;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -16,8 +19,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class SaleRepositoryImpl implements ISaleRepository {
 
-    private final DataSaleRepository jpaRepository;
-    private final SaleMapper saleMapper; // Este es el traductor Entity <-> Model
+    private final JpaSaleRepository jpaRepository;
+    private final SaleMapper saleMapper;// Este es el traductor Entity <-> Model
 
     @Override
     public SaleModel save(SaleModel saleModel) {
@@ -40,7 +43,14 @@ public class SaleRepositoryImpl implements ISaleRepository {
 
     @Override
     public List<SaleModel> searchSalesWithCashier(String searchTerm) {
-        return jpaRepository.searchSalesWithCashier(searchTerm)
+        // Uso la Specification
+        Specification<SaleEntity> spec = SaleSpecification.searchByTerm(searchTerm);
+
+        // Agrego el ordenamiento
+        Sort sort = Sort.by(Sort.Direction.DESC, "purchaseDate");
+
+        // Ajusto findAll con filtro + orden y convertimos a Model
+        return jpaRepository.findAll(spec, sort)
                 .stream()
                 .map(saleMapper::toModel)
                 .collect(Collectors.toList());
@@ -48,7 +58,11 @@ public class SaleRepositoryImpl implements ISaleRepository {
 
     @Override
     public List<SaleModel> findAllSalesWithCashier() {
-        return jpaRepository.findAllSalesWithCashier()
+        // Uso Specification para JOIN FETCH (optimización) + Ordenamiento
+        Specification<SaleEntity> spec = SaleSpecification.joinCashier();
+        Sort sort = Sort.by(Sort.Direction.DESC, "purchaseDate");
+
+        return jpaRepository.findAll(spec, sort)
                 .stream()
                 .map(saleMapper::toModel)
                 .collect(Collectors.toList());

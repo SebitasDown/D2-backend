@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import jakarta.persistence.*;
 import lombok.NoArgsConstructor;
+import org.springframework.data.jpa.repository.Query;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -14,6 +15,9 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @Table(name = "sale")
 public class SaleEntity {
+
+//    @NamedQueries()
+
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
