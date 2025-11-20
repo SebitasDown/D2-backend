@@ -37,7 +37,7 @@ public class SaleServiceImpl implements ISaleService {
     private final ISaleRepository saleRepository;
     // private final IShoppingCarRepository shoppingCarRepository;
     private final ProductRepositoryInterface productRepository;
-    // private final IUserRepository userRepository;
+    private final IUserRepository userRepository;
     private final SaleMapper saleMapper;
 
     @Override
@@ -66,7 +66,7 @@ public class SaleServiceImpl implements ISaleService {
 //                .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         // Obtener el cajero (Entity)
-//        User cashier = userRepository.findById(cashierId)
+//        UserModel cashier = userRepository.findById(cashierId)
 //                .orElseThrow(() -> new ResourceNotFoundException("Cashier not found"));
 
         // Task-001: Crear registro en la tabla sale
