@@ -1,31 +1,44 @@
 package com.backend.d2.mappers;
 
+import com.backend.d2.dtos.sales.responses.SaleItemResponse;
 import com.backend.d2.dtos.sales.responses.SaleResponse;
-import com.backend.d2.entity.Sale;
-// import com.backend.d2.models.ShoppingCar;
+import com.backend.d2.entity.SaleEntity;
+import com.backend.d2.models.SaleModel;
+// import com.backend.d2.models.ShoppingCarModel;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.factory.Mappers;
 
 import java.util.List;
 
-// Interfaz de MapStruct para convertir Entidades (Modelos) a DTOs
-@Mapper(componentModel = "spring") // componentModel="spring" es clave para la inyección
+@Mapper(componentModel = "spring") // para que funcione la inyección en el Repo
 public interface SaleMapper {
 
-    // Convierte la entidad Sale en el "Modelo" al DTO SaleResponse
-    // Mapeamos campos complejos manualmente
+    // Instancia estática por si la necesitas manualmente (como en ProductMapper)
+    SaleMapper INSTANCE = Mappers.getMapper(SaleMapper.class);
 
-    @Mapping(source = "cashier.name", target = "cashierName") // Task-004 -> tooma el nombre del User
-    @Mapping(source = "saleItems", target = "items")         // Toma la lista de ShoppingCar y la mapea a 'items'
-    SaleResponse toSaleResponse(Sale sale);
 
-    List<SaleResponse> toSaleResponseList(List<Sale> sales);
+    // Mapeo entre ENTIDAD (BD) y MODELO (Negocio)
 
-    // Convierte un item del carrito al DTO (SaleItem)
-    //Esto es para la lista anidada dentro de SaleResponse
+    // De Modelo a Entidad (Para guardar: RepositoryImpl.save)
+    SaleEntity toEntity(SaleModel model);
 
-    // @Mapping(source = "product.id", target = "productId")
-    // @Mapping(source = "product.name", target = "productName")
-    // SaleItem toSaleItem(ShoppingCar item);
+    // De Entidad a Modelo (Para leer: RepositoryImpl.findById)
+    SaleModel toModel(SaleEntity entity);
 
+    // Mapeo entre MODELO (Negocio) y DTO (Vista/API)
+
+    // De Modelo a DTO de Respuesta (Para el Controlador)
+    //@Mapping(source = "cashier.name", target = "cashierName")
+    //@Mapping(source = "saleItems", target = "items")
+    SaleResponse toSaleResponse(SaleModel model);
+
+    List<SaleResponse> toSaleResponseList(List<SaleModel> models);
+
+    // Metodo auxiliar para convertir items del carrito (Model) a items de respuesta (DTO)
+    /*
+    @Mapping(source = "product.id", target = "productId")
+    @Mapping(source = "product.name", target = "productName")
+    SaleItemResponse toSaleItemResponse(ShoppingCarModel itemModel);
+    */
 }

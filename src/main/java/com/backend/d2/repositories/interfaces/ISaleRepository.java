@@ -1,15 +1,22 @@
 package com.backend.d2.repositories.interfaces;
 
-import com.backend.d2.entity.Sale;
+import com.backend.d2.models.SaleModel;
 import java.util.List;
 import java.util.Optional;
 
 public interface ISaleRepository {
-    Sale save(Sale sale);
-    Optional<Sale> findById(Long id);
-    void delete(Sale sale);
 
-    List<Sale> searchSalesWithCashier(String searchTerm);
-    List<Sale> findAllSalesWithCashier();
-    Optional<Sale> findByIdAndCashierId(Long saleId, Long cashierId);
+    // Todos devuelven y reciben los modelos (SaleModel)
+    SaleModel save(SaleModel saleModel);
+
+    Optional<SaleModel> findById(Long id);
+
+    void delete(SaleModel saleModel);
+
+    List<SaleModel> searchSalesWithCashier(String searchTerm);
+
+    List<SaleModel> findAllSalesWithCashier();
+
+    Optional<SaleModel> findByIdAndCashierId(Long saleId, Long cashierId);
+
 }

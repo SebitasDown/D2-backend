@@ -4,21 +4,30 @@ import com.backend.d2.dtos.sales.requests.ProcessSaleRequest;
 import com.backend.d2.dtos.sales.requests.UpdatePaymentMethod;
 import com.backend.d2.dtos.sales.responses.ProcessSaleResponse;
 import com.backend.d2.dtos.sales.responses.SaleResponse;
+import com.backend.d2.entity.PaymentMethod;
+import com.backend.d2.entity.SaleEntity;
 import com.backend.d2.exceptions.BadRequestException;
 import com.backend.d2.exceptions.ResourceNotFoundException;
 import com.backend.d2.mappers.SaleMapper;
-import com.backend.d2.entity.*;
-// import com.backend.d2.repositories.interfaces.IProductRepository;
+// import com.backend.d2.models.ShoppingCarModel;
+import com.backend.d2.models.ProductModel;
+import com.backend.d2.models.SaleModel;
+//import com.backend.d2.models.ShoppingCar;
+//import com.backend.d2.models.User;
+// import com.backend.d2.models.UserModel;
+import com.backend.d2.repositories.interfaces.ProductRepositoryInterface;
 import com.backend.d2.repositories.interfaces.ISaleRepository;
-// import com.backend.d2.repositories.interfaces.IShoppingCarRepository;
-// import com.backend.d2.repositories.interfaces.IUserRepository;
+//import com.backend.d2.repositories.interfaces.IShoppingCarRepository;
+//import com.backend.d2.repositories.interfaces.IUserRepository;
 import com.backend.d2.services.interfaces.ISaleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor // Inyecta todas las dependencias (final)
@@ -27,7 +36,7 @@ public class SaleServiceImpl implements ISaleService {
     // Inyección de Dependencias
     private final ISaleRepository saleRepository;
     // private final IShoppingCarRepository shoppingCarRepository;
-    // private final IProductRepository productRepository;
+    private final ProductRepositoryInterface productRepository;
     // private final IUserRepository userRepository;
     private final SaleMapper saleMapper;
 
@@ -56,18 +65,22 @@ public class SaleServiceImpl implements ISaleService {
 //                .map(ShoppingCar::getSubtotal)
 //                .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        // Obtener el cajero
+        // Obtener el cajero (Entity)
 //        User cashier = userRepository.findById(cashierId)
 //                .orElseThrow(() -> new ResourceNotFoundException("Cashier not found"));
 
         // Task-001: Crear registro en la tabla sale
+
+        // Crear el MODELO de negocio (SaleModel)
 //        Sale newSale = new Sale();
+
 //        newSale.setCashier(cashier);
 //        newSale.setTotal(total);
 //        newSale.setCashMethod(request.getCashMethod());
 //        newSale.setPurchaseDate(LocalDate.now());
 //        newSale.setCancelled(false);
 //
+         // Guarda usando el repositorio que acepta y devuelve los modelos
 //        Sale savedSale = saleRepository.save(newSale);
 
         // Task-001: Actualizar Stock y Asociar carrito a venta
@@ -89,6 +102,7 @@ public class SaleServiceImpl implements ISaleService {
 //            change = request.getAmountPaid().subtract(total);
 //        }
 
+        // Retorna un DTO usando el Mapper (Model -> Response)
         // Usamos el Mapper para convertir la Entidad a un DTO de respuesta
 //        return new ProcessSaleResponse(
 //                savedSale.getId(),
@@ -103,7 +117,8 @@ public class SaleServiceImpl implements ISaleService {
     public SaleResponse cancelSale(Long saleId, Long userId) {
 
         // Task-002: Validar que venta existe
-        Sale sale = saleRepository.findById(saleId)
+        // Buscamos el MODELO
+        SaleModel sale = saleRepository.findById(saleId)
                 .orElseThrow(() -> new ResourceNotFoundException("Sale not found"));
 
         // Task-002: Validar que sea del mismo dia
@@ -127,7 +142,7 @@ public class SaleServiceImpl implements ISaleService {
 
         // Task-002: Actualizar venta
         sale.setCancelled(true);
-        Sale updatedSale = saleRepository.save(sale);
+        SaleModel updatedSale = saleRepository.save(sale);
 
         // Task-002: Retornar la venta actualizada (usando el mapper)
         return saleMapper.toSaleResponse(updatedSale);
@@ -139,7 +154,7 @@ public class SaleServiceImpl implements ISaleService {
     public SaleResponse updatePaymentMethod(Long saleId, UpdatePaymentMethod dto, Long userId) {
 
         // Task-003: Validar que la venta existe
-        Sale sale = saleRepository.findById(saleId)
+        SaleModel sale = saleRepository.findById(saleId)
                 .orElseThrow(() -> new ResourceNotFoundException("Sale not found"));
 
         // Task-003: Validar que sea venta del mismo dia
@@ -149,7 +164,7 @@ public class SaleServiceImpl implements ISaleService {
 
         // Task-003: Actualizar cash_method en sale
         sale.setCashMethod(dto.getNewPaymentMethod());
-        Sale updatedSale = saleRepository.save(sale);
+        SaleModel updatedSale = saleRepository.save(sale);
 
         // Task-003: Retornar venta actualizada (usando el mapper)
         return saleMapper.toSaleResponse(updatedSale);
@@ -161,7 +176,7 @@ public class SaleServiceImpl implements ISaleService {
     public List<SaleResponse> listSales(String searchTerm) {
 
         // Task-004: Filtrar Lista de ventas (Buscador) y JOIN con user
-        List<Sale> sales;
+        List<SaleModel> sales;
         if (searchTerm == null || searchTerm.isBlank()) {
             sales = saleRepository.findAllSalesWithCashier(); // Query Optimizada
         } else {
@@ -177,7 +192,7 @@ public class SaleServiceImpl implements ISaleService {
 //    @Transactional(readOnly = true)
 //    public SaleResponse getSaleById(Long saleId, User currentUser) {
 //        // Task-005: Buscar venta por id
-//        Optional<Sale> saleOpt;
+//        Optional<SaleModel> saleOpt;
 //
 //        // Task-005: MANAGER/ADMIN pueden ver cualquier venta
 //        if (currentUser.getRole() == User.Role.ADMIN || currentUser.getRole() == User.Role.MANAGER) {
@@ -188,11 +203,11 @@ public class SaleServiceImpl implements ISaleService {
 //            saleOpt = saleRepository.findByIdAndCashierId(saleId, currentUser.getId());
 //        }
 //        else {
-//            throw new BadRequestException("Acceso denegado. Rol no reconocido.");
+//            throw new BadRequestException("Access denied. Role not recognized");
 //        }
 //
-//        Sale sale = saleOpt
-//                .orElseThrow(() -> new ResourceNotFoundException("Venta no encontrada o no tienes permiso para verla."));
+//        SaleModel sale = saleOpt
+//            .orElseThrow(() -> new ResourceNotFoundException("Sale not found or you do not have permission to view it"));
 //
 //        return saleMapper.toSaleResponse(sale);
 //    }
@@ -202,11 +217,11 @@ public class SaleServiceImpl implements ISaleService {
 //    public void deleteSale(Long saleId, User currentUser) {
 //        // Task-006: Validar que solo ADMIN PUEDA EJECUTAR
 //        if (currentUser.getRole() != User.Role.ADMIN) {
-//            throw new BadRequestException("Acceso denegado. Solo ADMIN puede eliminar ventas.");
+//            throw new BadRequestException("Access denied. Only ADMIN can delete sales");
 //        }
 //
-//        Sale sale = saleRepository.findById(saleId)
-//                .orElseThrow(() -> new ResourceNotFoundException("Venta no encontrada."));
+//        SaleModel sale = saleRepository.findById(saleId)
+    //                .orElseThrow(() -> new ResourceNotFoundException("Sale not found"));
 //
 //        // Task-006: Obtener productos de la venta
 //        List<ShoppingCar> saleItems = shoppingCarRepository.findBySaleId(saleId);
@@ -232,7 +247,7 @@ public class SaleServiceImpl implements ISaleService {
 //            throw new BadRequestException("Acceso denegado. Solo ADMIN puede actualizar ventas.");
 //        }
 //
-//        Sale sale = saleRepository.findById(saleId)
+//        SaleModel sale = saleRepository.findById(saleId)
 //                .orElseThrow(() -> new ResourceNotFoundException("Venta no encontrada."));
 //
 //        // Task-007: Actualizar campos en sale
@@ -240,7 +255,7 @@ public class SaleServiceImpl implements ISaleService {
 //        sale.setTotal(dto.getTotal()); // Como pide la Task-007 (Admin puede ajustar)
 //        sale.setCancelled(dto.isCancelled());
 //
-//        Sale updatedSale = saleRepository.save(sale);
+//        SaleModel updatedSale = saleRepository.save(sale);
 //
 //        // Task-007: Retornar venta actualizada
 //        return saleMapper.toSaleResponse(updatedSale);

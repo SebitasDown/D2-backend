@@ -4,7 +4,7 @@ import com.backend.d2.entity.ProductEntity;
 import com.backend.d2.mappers.ProductMapper;
 import com.backend.d2.models.ProductModel;
 import com.backend.d2.repositories.interfaces.ProductRepositoryInterface;
-import com.backend.d2.repositories.jpa.JpaProductRepository;
+import com.backend.d2.repositories.interfaces.jpa.JpaProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

@@ -1,4 +1,4 @@
-package com.backend.d2.repositories.jpa;
+package com.backend.d2.repositories.interfaces.jpa;
 
 import com.backend.d2.entity.ProductEntity;
 import org.springframework.data.domain.Page;
