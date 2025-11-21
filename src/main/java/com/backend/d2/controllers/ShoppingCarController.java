@@ -144,13 +144,9 @@ public class ShoppingCarController {
     @GetMapping("/sale/{saleId}/paged")
     public ResponseEntity<Page<ShoppingCarModel>> getItemsBySalePaged(
             @PathVariable Long saleId,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
+            Pageable pageable) {
 
-        Pageable pageable = PageRequest.of(page, size);
-
-        Page<ShoppingCarModel> result =
-                shoppingCarService.getItemsBySalePaged(saleId, pageable);
+        Page<ShoppingCarModel> result = shoppingCarService.getItemsBySalePaged(saleId, pageable);
 
         return ResponseEntity.ok(result);
     }
