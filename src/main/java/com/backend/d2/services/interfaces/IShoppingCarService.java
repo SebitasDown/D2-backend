@@ -4,6 +4,7 @@ import com.backend.d2.models.ShoppingCarModel;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 public interface IShoppingCarService {
@@ -28,6 +29,9 @@ public interface IShoppingCarService {
 
     // Task 007: Asociar carrito a una venta (finalizar)
     void assignSaleToCart(Long cashierId, Long saleId);
+
+    // Actualizar precio de item (solo admin)
+    ShoppingCarModel updatePrice(Long itemId, BigDecimal newPrice);
 
     // Task 010: Paginación de items por saleId
     Page<ShoppingCarModel> getItemsBySalePaged(Long saleId, Pageable pageable);

@@ -1,6 +1,8 @@
 package com.backend.d2.repositories.interfaces;
 
 import com.backend.d2.models.ShoppingCarModel;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import java.util.List;
 import java.util.Optional;
 
@@ -26,4 +28,6 @@ public interface IShoppingCarRepository {
     void deleteAll(Iterable<ShoppingCarModel> items);
 
     boolean existsById(Long id);
+
+    Page<ShoppingCarModel> findBySaleIdPaged(Long saleId, Pageable pageable);
 }

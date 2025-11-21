@@ -6,6 +6,8 @@ import com.backend.d2.models.ShoppingCarModel;
 import com.backend.d2.repositories.interfaces.IShoppingCarRepository;
 import com.backend.d2.repositories.interfaces.jpa.JpaShoppingCarRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -85,5 +87,12 @@ public class ShoppingCarRepositoryImpl implements IShoppingCarRepository {
     @Override
     public boolean existsById(Long id) {
         return jpaRepository.existsById(id);
+    }
+
+    @Override
+    public Page<ShoppingCarModel> findBySaleIdPaged(Long saleId, Pageable pageable) {
+        Page<ShoppingCarEntity> entityPage = jpaRepository.findBySaleId(saleId, pageable);
+
+        return entityPage.map(mapper::toModel);
     }
 }
