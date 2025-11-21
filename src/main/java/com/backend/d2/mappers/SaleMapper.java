@@ -4,41 +4,39 @@ import com.backend.d2.dtos.sales.responses.SaleItemResponse;
 import com.backend.d2.dtos.sales.responses.SaleResponse;
 import com.backend.d2.entity.SaleEntity;
 import com.backend.d2.models.SaleModel;
-// import com.backend.d2.models.ShoppingCarModel;
+import com.backend.d2.models.ShoppingCarModel;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
 
 import java.util.List;
 
-@Mapper(componentModel = "spring") // para que funcione la inyección en el Repo
+// "uses" conecta este mapper con los otros que ya creaste
+@Mapper(componentModel = "spring", uses = {UserMapper.class, ShoppingCarMapper.class})
 public interface SaleMapper {
 
-    // Instancia estática por si la necesitas manualmente (como en ProductMapper)
     SaleMapper INSTANCE = Mappers.getMapper(SaleMapper.class);
 
+    // ENTITY (BD) <-> MODEL (Negocio)
 
-    // Mapeo entre ENTIDAD (BD) y MODELO (Negocio)
-
-    // De Modelo a Entidad (Para guardar: RepositoryImpl.save)
+    // Al usar 'ShoppingCarMapper', MapStruct sabe convertir la lista automáticamente
     SaleEntity toEntity(SaleModel model);
-
-    // De Entidad a Modelo (Para leer: RepositoryImpl.findById)
     SaleModel toModel(SaleEntity entity);
 
-    // Mapeo entre MODELO (Negocio) y DTO (Vista/API)
+    // MODEL (Negocio) -> DTO (Respuesta API)
 
-    // De Modelo a DTO de Respuesta (Para el Controlador)
-    //@Mapping(source = "cashier.name", target = "cashierName")
-    //@Mapping(source = "saleItems", target = "items")
+    // MapStruct usará UserMapper para convertir UserModel -> UserResponseDTO si fuera necesario
+    @Mapping(source = "cashier.name", target = "cashierName")
+    @Mapping(source = "saleItems", target = "items")
     SaleResponse toSaleResponse(SaleModel model);
 
     List<SaleResponse> toSaleResponseList(List<SaleModel> models);
 
-    // Metodo auxiliar para convertir items del carrito (Model) a items de respuesta (DTO)
-    /*
+    // Métodos Auxiliares (Model -> ItemResponse)
+
+    // Define cómo transformar un item del carrito en un item de respuesta de venta
     @Mapping(source = "product.id", target = "productId")
     @Mapping(source = "product.name", target = "productName")
+    // quantity, price y subtotal se mapean solos porque se llaman igual
     SaleItemResponse toSaleItemResponse(ShoppingCarModel itemModel);
-    */
 }

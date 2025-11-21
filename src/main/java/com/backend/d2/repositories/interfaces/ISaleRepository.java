@@ -6,7 +6,6 @@ import java.util.Optional;
 
 public interface ISaleRepository {
 
-    // Todos devuelven y reciben los modelos (SaleModel)
     SaleModel save(SaleModel saleModel);
 
     Optional<SaleModel> findById(Long id);

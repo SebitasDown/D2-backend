@@ -4,10 +4,13 @@ import com.backend.d2.dtos.sales.requests.ProcessSaleRequest;
 import com.backend.d2.dtos.sales.requests.UpdatePaymentMethod;
 import com.backend.d2.dtos.sales.responses.ProcessSaleResponse;
 import com.backend.d2.dtos.sales.responses.SaleResponse;
-//import com.backend.d2.models.UserModel;
+import com.backend.d2.entity.Role;
+import com.backend.d2.exceptions.BadRequestException;
+import com.backend.d2.models.UserModel;
 import com.backend.d2.services.interfaces.ISaleService;
-//import com.backend.d2.services.interfaces.IUserService;
+import com.backend.d2.services.interfaces.IUserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,40 +23,38 @@ public class SaleController {
 
     // Inyectamos las INTERFACES, no las implementaciones
     private final ISaleService saleService;
-//    private final IUserService userService; // Lo usamos para simular el usuario
+    private final IUserService userService;
 
     // --- Simulación de Seguridad (Temporal) ---
-    // Como no tienes Spring Security, simulamos quién es el usuario
-    // leyendo un 'header'. En un futuro, esto lo obtendrás del token.
-//    private User getSimulatedUser(Long userId) {
-//        if (userId == null) {
-//            // Si no envían header, simulamos ser el CAJERO 1
-//            return userService.getTestUser(1L, User.Role.CASHIER);
-//        }
-//        if (userId == 99L) {
-//            // Si envían 99, simulamos ser ADMIN
-//            return userService.getTestUser(99L, User.Role.ADMIN);
-//        }
-//        // Buscamos al usuario real
-//        return userService.findById(userId)
-//                .orElseThrow(() -> new BadRequestException("User not found with ID: " + userId));
-//    }
+    private UserModel getSimulatedUser(Long userId) {
+        if (userId == null) {
+            // Si no envían header, simulamos ser el CAJERO 1
+            // Nota: Asegúrate de que tu IUserService devuelva UserModel, no User
+            return userService.getTestUser(1L, Role.CASHIER);
+        }
+        if (userId == 99L) {
+            // Si envían 99, simulamos ser ADMIN
+            return userService.getTestUser(99L, Role.ADMIN);
+        }
+
+        // Buscamos al usuario real
+        return userService.findById(userId)
+                .orElseThrow(() -> new BadRequestException("User not found with ID: " + userId));
+    }
 
 
     //Task-001: Crear endpoint procesar venta (POST)
     // Accesible para todos los roles
-
     @PostMapping("/process")
     public ResponseEntity<ProcessSaleResponse> processSale(
             @RequestBody ProcessSaleRequest request,
             @RequestHeader(value = "X-User-Id", required = false) Long userId) {
 
         // Obtenemos el cajero que está haciendo la venta
-//        User cashier = getSimulatedUser(userId);
+        UserModel cashier = getSimulatedUser(userId);
 
-//        ProcessSaleResponse response = saleService.processSale(request, cashier.getId());
-//        return ResponseEntity.status(HttpStatus.CREATED).body(response);
-        return null;
+        ProcessSaleResponse response = saleService.processSale(request, cashier.getId());
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     // Task-002: Crear endpoint cancelar venta (PATCH)
@@ -63,10 +64,9 @@ public class SaleController {
             @PathVariable Long saleId,
             @RequestHeader(value = "X-User-Id", required = false) Long userId) {
 
-//        User currentUser = getSimulatedUser(userId);
-//        SaleResponse response = saleService.cancelSale(saleId, currentUser.getId());
-//        return ResponseEntity.ok(response);
-        return null;
+        UserModel currentUser = getSimulatedUser(userId);
+        SaleResponse response = saleService.cancelSale(saleId, currentUser.getId());
+        return ResponseEntity.ok(response);
     }
 
     // Task-003: Crear endpoint actualizar metodo de pago (PATCH)
@@ -77,10 +77,9 @@ public class SaleController {
             @RequestBody UpdatePaymentMethod dto,
             @RequestHeader(value = "X-User-Id", required = false) Long userId) {
 
-//        User currentUser = getSimulatedUser(userId);
-//        SaleResponse response = saleService.updatePaymentMethod(saleId, dto, currentUser.getId());
-//        return ResponseEntity.ok(response);
-        return null;
+        UserModel currentUser = getSimulatedUser(userId);
+        SaleResponse response = saleService.updatePaymentMethod(saleId, dto, currentUser.getId());
+        return ResponseEntity.ok(response);
     }
 
     // Task-004: Listar ventas con buscador (GET)
@@ -102,12 +101,11 @@ public class SaleController {
             @RequestHeader(value = "X-User-Id", required = false) Long userId) {
 
         // Obtenemos el usuario simulado
-//        User currentUser = getSimulatedUser(userId);
+        UserModel currentUser = getSimulatedUser(userId);
 
         // ¡La lógica de roles ya está en el servicio!
-//        SaleResponse sale = saleService.getSaleById(saleId, currentUser);
-//        return ResponseEntity.ok(sale);
-        return null;
+        SaleResponse sale = saleService.getSaleById(saleId, currentUser);
+        return ResponseEntity.ok(sale);
     }
 
     // Task-006: Crear endpoint para eliminar venta (DELETE) -> solo accesible para ADMIN
@@ -117,12 +115,11 @@ public class SaleController {
             @RequestHeader(value = "X-User-Id", required = false) Long userId) {
 
         // Simulamos ser ADMIN si nos pasan el ID 99
-//        User currentUser = getSimulatedUser(userId);
+        UserModel currentUser = getSimulatedUser(userId);
 
         // La lógica de "solo ADMIN" está en el servicio
-//        saleService.deleteSale(saleId, currentUser);
-//        return ResponseEntity.noContent().build(); // 204 No Content
-        return null;
+        saleService.deleteSale(saleId, currentUser);
+        return ResponseEntity.noContent().build(); // 204 No Content
     }
 
     // Task-007: Crear endpoint actualizar venta (PATCH) -> Admin
@@ -133,12 +130,10 @@ public class SaleController {
             @RequestHeader(value = "X-User-Id", required = false) Long userId) {
 
         // Simulamos ser ADMIN si nos pasan el ID 99
-//        User currentUser = getSimulatedUser(userId);
+        UserModel currentUser = getSimulatedUser(userId);
 
         // La lógica de "solo ADMIN" está en el servicio
-//        SaleResponse updatedSale = saleService.updateSale(saleId, dto, currentUser);
-//        return ResponseEntity.ok(updatedSale);
-
-        return null;
+        SaleResponse updatedSale = saleService.updateSale(saleId, dto, currentUser);
+        return ResponseEntity.ok(updatedSale);
     }
 }

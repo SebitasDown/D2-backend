@@ -43,13 +43,10 @@ public class SaleRepositoryImpl implements ISaleRepository {
 
     @Override
     public List<SaleModel> searchSalesWithCashier(String searchTerm) {
-        // Uso la Specification
-        Specification<SaleEntity> spec = SaleSpecification.searchByTerm(searchTerm);
+        Specification<SaleEntity> spec = SaleSpecification.searchByTerm(searchTerm); // filtro por ID o nombre de cajero
 
-        // Agrego el ordenamiento
-        Sort sort = Sort.by(Sort.Direction.DESC, "purchaseDate");
+        Sort sort = Sort.by(Sort.Direction.DESC, "purchaseDate"); // Definimos el orden -> Ventas más recientes primero
 
-        // Ajusto findAll con filtro + orden y convertimos a Model
         return jpaRepository.findAll(spec, sort)
                 .stream()
                 .map(saleMapper::toModel)
@@ -58,8 +55,8 @@ public class SaleRepositoryImpl implements ISaleRepository {
 
     @Override
     public List<SaleModel> findAllSalesWithCashier() {
-        // Uso Specification para JOIN FETCH (optimización) + Ordenamiento
         Specification<SaleEntity> spec = SaleSpecification.joinCashier();
+
         Sort sort = Sort.by(Sort.Direction.DESC, "purchaseDate");
 
         return jpaRepository.findAll(spec, sort)

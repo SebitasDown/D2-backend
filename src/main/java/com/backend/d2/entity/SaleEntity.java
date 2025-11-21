@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
 @Data
 @Entity
@@ -34,9 +35,8 @@ public class SaleEntity {
     @Column(name = "purchase_date", nullable = false)
     private LocalDate purchaseDate;
 
-    // Relación inversa: una venta tiene muchos items (ShoppingCar)
     @OneToMany(mappedBy = "sale", cascade = CascadeType.ALL)
-    //private List<ShoppingCar> saleItems;
+    private List<ShoppingCarEntity> saleItems;
 
     @Column(name = "is_cancelled", nullable = false, columnDefinition = "BOOLEAN DEFAULT false")
     private boolean isCancelled = false;
