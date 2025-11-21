@@ -175,6 +175,24 @@ public class ShoppingCarServiceImpl implements IShoppingCarService {
         shoppingCarRepository.saveAll(items);
     }
 
+    @Override
+    public ShoppingCarModel updatePrice(Long itemId, BigDecimal newPrice) {
+
+        ShoppingCarEntity item = shoppingCarRepository.findById(itemId)
+                .orElseThrow(() -> new RuntimeException("Cart item not found"));
+
+        if (newPrice.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new RuntimeException("Price must be positive");
+        }
+
+        item.setPrice(newPrice);
+        item.setSubtotal(newPrice.multiply(BigDecimal.valueOf(item.getQuantity())));
+
+        ShoppingCarEntity saved = shoppingCarRepository.save(item);
+
+        return mapper.toModel(saved);
+    }
+
     // ============================================================
     // Task 010: Paginación
     // ============================================================
