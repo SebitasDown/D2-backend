@@ -6,11 +6,9 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 
-// ------------------------------------------------------------
 // Para RESPONDER a la solicitud de procesar venta (Task-001)
-// ------------------------------------------------------------
 
-// El ID de la venta, el cambio y los detalles de la venta po medio de (SaleResponseDTO)
+// El ID de la venta, el cambio y los detalles de la venta po medio de (SaleResponseDTO) (input>)
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

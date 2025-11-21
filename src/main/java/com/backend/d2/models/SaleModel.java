@@ -4,11 +4,12 @@ import com.backend.d2.entity.PaymentMethod;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
 public class SaleModel {
 
     private Long id;
-    private UserModel cashier; // El modelo del usuario
+    private UserModel cashier;
     private BigDecimal total;
     private PaymentMethod cashMethod;
     private LocalDate purchaseDate;
