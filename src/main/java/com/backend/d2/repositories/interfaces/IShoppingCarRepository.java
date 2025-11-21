@@ -1,28 +1,29 @@
 package com.backend.d2.repositories.interfaces;
 
-import com.backend.d2.entity.ShoppingCarEntity;
+import com.backend.d2.models.ShoppingCarModel;
 import java.util.List;
 import java.util.Optional;
 
 public interface IShoppingCarRepository {
 
-    ShoppingCarEntity save(ShoppingCarEntity item);
+    ShoppingCarModel save(ShoppingCarModel item);
 
-    List<ShoppingCarEntity> saveAll(Iterable<ShoppingCarEntity> items);
+    List<ShoppingCarModel> saveAll(Iterable<ShoppingCarModel> items);
 
-    Optional<ShoppingCarEntity> findById(Long id);
+    Optional<ShoppingCarModel> findById(Long id);
 
-    // Métodos personalizados para tus Tasks
-    List<ShoppingCarEntity> findByCashierIdAndSaleIsNull(Long cashierId);
+    // Task-004: Obtener items del carrito activo (Modelos)
+    List<ShoppingCarModel> findByCashierIdAndSaleIsNull(Long cashierId);
 
-    // Busca un item especifico en el carrito activo (Task-001)
-    Optional<ShoppingCarEntity> findActiveItemByCashierAndProduct(Long cashierId, Long productId);
+    // Task-001: Validar si existe producto en carrito
+    Optional<ShoppingCarModel> findActiveItemByCashierAndProduct(Long cashierId, Long productId);
 
-    List<ShoppingCarEntity> findBySaleId(Long saleId);
+    // Task-002: Obtener items de una venta
+    List<ShoppingCarModel> findBySaleId(Long saleId);
 
-    void delete(ShoppingCarEntity item);
+    void delete(ShoppingCarModel item);
 
-    void deleteAll(Iterable<ShoppingCarEntity> items);
+    void deleteAll(Iterable<ShoppingCarModel> items);
 
     boolean existsById(Long id);
 }

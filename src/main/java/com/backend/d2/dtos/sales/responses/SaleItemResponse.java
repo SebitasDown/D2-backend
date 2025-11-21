@@ -4,10 +4,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-
-// ------------------------------------------------------------
 // Es un DTO auxiliar, representa un solo producto dentro de SaleResponseDTO
-// ------------------------------------------------------------
 
 // Contiene nombre del producto, cantidad, precio, subtotal
 @Data
