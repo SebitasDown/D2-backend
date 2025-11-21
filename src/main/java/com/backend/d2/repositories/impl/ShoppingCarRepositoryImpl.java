@@ -1,7 +1,7 @@
 package com.backend.d2.repositories.impl;
 
 import com.backend.d2.entity.ShoppingCarEntity;
-import com.backend.d2.repositories.interfaces.DataShoppingCarRepository;
+import com.backend.d2.repositories.interfaces.jpa.JpaShoppingCarRepository;
 import com.backend.d2.repositories.interfaces.IShoppingCarRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -13,7 +13,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class ShoppingCarRepositoryImpl implements IShoppingCarRepository {
 
-    private final DataShoppingCarRepository jpaRepository;
+    private final JpaShoppingCarRepository jpaRepository;
 
     @Override
     public ShoppingCarEntity save(ShoppingCarEntity item) {

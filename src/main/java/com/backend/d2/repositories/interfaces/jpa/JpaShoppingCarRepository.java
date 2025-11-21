@@ -1,4 +1,4 @@
-package com.backend.d2.repositories.interfaces;
+package com.backend.d2.repositories.interfaces.jpa;
 
 import com.backend.d2.entity.ShoppingCarEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface DataShoppingCarRepository extends JpaRepository<ShoppingCarEntity, Long> {
+public interface JpaShoppingCarRepository extends JpaRepository<ShoppingCarEntity, Long> {
 
     // Task-004: Obtener carrito actual (items donde id_sale es NULL)
     List<ShoppingCarEntity> findByCashierIdAndSaleIsNull(Long cashierId);
