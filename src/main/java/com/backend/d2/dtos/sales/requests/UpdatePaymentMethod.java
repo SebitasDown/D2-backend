@@ -1,0 +1,15 @@
+package com.backend.d2.dtos.sales.requests;
+
+// Este DTO para recibir la solicitud de actualizar el metodo de pago (Task-003)
+import com.backend.d2.entity.PaymentMethod;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+// Contiene solo el nuevo metodo de pago
+@Data
+@NoArgsConstructor
+public class UpdatePaymentMethod {
+
+    private PaymentMethod newPaymentMethod;
+
+}
