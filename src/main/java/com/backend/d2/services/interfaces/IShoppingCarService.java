@@ -1,25 +1,34 @@
 package com.backend.d2.services.interfaces;
 
-import com.backend.d2.dtos.shoppingCar.responses.ShoppingCarResponse;
 import com.backend.d2.models.ShoppingCarModel;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
-import java.math.BigDecimal;
+import java.util.List;
 
 public interface IShoppingCarService {
 
+    // Task 001: Agregar item al carrito
     ShoppingCarModel addItem(Long cashierId, Long productId, Integer quantity);
 
-    ShoppingCarModel updateQuantity(Long cashierId, Long itemId, Integer quantity);
+    // Task 002: Actualizar cantidad de un item existente
+    ShoppingCarModel updateItem(Long itemId, Integer quantity);
 
-    void removeItem(Long cashierId, Long itemId);
+    // Task 003: Eliminar item
+    boolean deleteItem(Long itemId);
 
-    ShoppingCarResponse getActiveCart(Long cashierId);
+    // Task 004: Obtener carrito activo (id_sale = null)
+    List<ShoppingCarModel> getActiveCart(Long cashierId);
 
-    ShoppingCarResponse clearCart(Long cashierId);
+    // Task 005: Vaciar carrito del cajero
+    void clearCart(Long cashierId);
 
-    ShoppingCarResponse getCartBySaleId(Long saleId);
+    // Task 006: Ver carrito asociado a una venta
+    List<ShoppingCarModel> getCartBySale(Long saleId);
 
-    ShoppingCarModel updatePrice(Long itemId, BigDecimal newPrice);
+    // Task 007: Asociar carrito a una venta (finalizar)
+    void assignSaleToCart(Long cashierId, Long saleId);
 
-    void deleteCartBySaleId(Long saleId);
+    // Task 010: Paginación de items por saleId
+    Page<ShoppingCarModel> getItemsBySalePaged(Long saleId, Pageable pageable);
 }
