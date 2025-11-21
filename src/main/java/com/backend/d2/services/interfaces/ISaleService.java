@@ -5,7 +5,8 @@ import com.backend.d2.dtos.sales.requests.UpdatePaymentMethod;
 import com.backend.d2.dtos.sales.responses.ProcessSaleResponse;
 import com.backend.d2.dtos.sales.responses.SaleResponse;
 import com.backend.d2.models.UserModel;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import java.util.List;
 
 // Interfaz para la lógica de negocio de Ventas
@@ -21,7 +22,8 @@ public interface ISaleService {
     SaleResponse updatePaymentMethod(Long saleId, UpdatePaymentMethod dto, Long userId);
 
     //Task-004 -> Listar ventas (con filtro)
-    List<SaleResponse> listSales(String searchTerm);
+    // List<SaleResponse> listSales(String searchTerm);
+    Page<SaleResponse> listSales(String searchTerm, Pageable pageable);
 
     // Task-005: Ver venta por ID (con lógica de roles)
     SaleResponse getSaleById(Long saleId, UserModel currentUser);

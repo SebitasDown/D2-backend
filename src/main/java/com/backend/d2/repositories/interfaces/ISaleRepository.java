@@ -1,6 +1,9 @@
 package com.backend.d2.repositories.interfaces;
 
 import com.backend.d2.models.SaleModel;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -12,9 +15,9 @@ public interface ISaleRepository {
 
     void delete(SaleModel saleModel);
 
-    List<SaleModel> searchSalesWithCashier(String searchTerm);
+    Page<SaleModel> searchSalesWithCashier(String searchTerm, Pageable pageable);
 
-    List<SaleModel> findAllSalesWithCashier();
+    Page<SaleModel> findAllSalesWithCashier(Pageable pageable);
 
     Optional<SaleModel> findByIdAndCashierId(Long saleId, Long cashierId);
 

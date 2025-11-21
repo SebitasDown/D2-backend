@@ -19,6 +19,8 @@ import com.backend.d2.repositories.interfaces.IUserRepository;
 import com.backend.d2.repositories.interfaces.ProductRepositoryInterface;
 import com.backend.d2.services.interfaces.ISaleService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -157,14 +159,14 @@ public class SaleServiceImpl implements ISaleService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<SaleResponse> listSales(String searchTerm) {
-        List<SaleModel> sales;
+    public Page<SaleResponse> listSales(String searchTerm, Pageable pageable) {
+        Page<SaleModel> salesPage;
         if (searchTerm == null || searchTerm.isBlank()) {
-            sales = saleRepository.findAllSalesWithCashier();
+            salesPage = saleRepository.findAllSalesWithCashier(pageable);
         } else {
-            sales = saleRepository.searchSalesWithCashier(searchTerm.trim());
+            salesPage = saleRepository.searchSalesWithCashier(searchTerm.trim(), pageable);
         }
-        return saleMapper.toSaleResponseList(sales);
+        return salesPage.map(saleMapper::toSaleResponse);
     }
 
     @Override

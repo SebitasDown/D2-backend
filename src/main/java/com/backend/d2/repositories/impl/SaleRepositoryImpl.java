@@ -10,6 +10,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Repository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Optional;
@@ -42,27 +44,20 @@ public class SaleRepositoryImpl implements ISaleRepository {
     }
 
     @Override
-    public List<SaleModel> searchSalesWithCashier(String searchTerm) {
-        Specification<SaleEntity> spec = SaleSpecification.searchByTerm(searchTerm); // filtro por ID o nombre de cajero
+    public Page<SaleModel> searchSalesWithCashier(String searchTerm, Pageable pageable) {
+        Specification<SaleEntity> spec = SaleSpecification.searchByTerm(searchTerm);// filtro por ID o nombre de cajero
 
-        Sort sort = Sort.by(Sort.Direction.DESC, "purchaseDate"); // Definimos el orden -> Ventas más recientes primero
-
-        return jpaRepository.findAll(spec, sort)
-                .stream()
-                .map(saleMapper::toModel)
-                .collect(Collectors.toList());
+        // JpaSpecificationExecutor ya tiene un metodo findAll
+        return jpaRepository.findAll(spec, pageable)
+                .map(saleMapper::toModel);
     }
 
     @Override
-    public List<SaleModel> findAllSalesWithCashier() {
+    public Page<SaleModel> findAllSalesWithCashier(Pageable pageable) {
         Specification<SaleEntity> spec = SaleSpecification.joinCashier();
 
-        Sort sort = Sort.by(Sort.Direction.DESC, "purchaseDate");
-
-        return jpaRepository.findAll(spec, sort)
-                .stream()
-                .map(saleMapper::toModel)
-                .collect(Collectors.toList());
+        return jpaRepository.findAll(spec, pageable)
+                .map(saleMapper::toModel);
     }
 
     @Override
