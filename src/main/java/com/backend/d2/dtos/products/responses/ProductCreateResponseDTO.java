@@ -1,7 +1,13 @@
 package com.backend.d2.dtos.products.responses;
 
 import jakarta.validation.constraints.NotBlank;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class ProductCreateResponseDTO {
 
     private Long id;

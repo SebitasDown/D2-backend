@@ -12,13 +12,13 @@ import java.util.List;
 @Mapper(componentModel = "spring")
 public interface ShoppingCarMapper {
 
-    // =========================================
+    // ============================
     // ENTITY → MODEL
-    // =========================================
+    // ============================
     @Mappings({
             @Mapping(source = "id", target = "id"),
-            @Mapping(source = "product.id", target = "productId"),
-            @Mapping(source = "cashierId", target = "cashierId"),
+            @Mapping(source = "productId", target = "productId"),   // Mapea el OBJETO completo
+            @Mapping(source = "cashierId", target = "cashierId"),   // Igual OBJETO completo
             @Mapping(source = "quantity", target = "quantity"),
             @Mapping(source = "price", target = "price"),
             @Mapping(source = "subtotal", target = "subtotal"),
@@ -29,30 +29,30 @@ public interface ShoppingCarMapper {
     List<ShoppingCarModel> toModelList(List<ShoppingCarEntity> entities);
 
 
-    // =========================================
+    // ============================
     // MODEL → ENTITY
-    // =========================================
+    // ============================
     @Mappings({
             @Mapping(source = "id", target = "id"),
-            @Mapping(target = "product", ignore = true),  // se asigna en el service
-            @Mapping(source = "cashierId", target = "cashierId"),
+            @Mapping(target = "productId", ignore = true), // Se setea en el service
+            @Mapping(target = "cashierId", ignore = true), // Igual se setea en el service
             @Mapping(source = "quantity", target = "quantity"),
             @Mapping(source = "price", target = "price"),
             @Mapping(source = "subtotal", target = "subtotal"),
-            @Mapping(target = "sale", ignore = true)       // se asigna en el service
+            @Mapping(target = "sale", ignore = true)
     })
     ShoppingCarEntity toEntity(ShoppingCarModel model);
 
     List<ShoppingCarEntity> toEntityList(List<ShoppingCarModel> models);
 
 
-    // =========================================
-    // ENTITY → ShoppingCarItemResponse
-    // =========================================
+    // ============================
+    // ENTITY → ITEM RESPONSE
+    // ============================
     @Mappings({
             @Mapping(source = "id", target = "idShoppingCar"),
-            @Mapping(source = "product.id", target = "idProduct"),
-            @Mapping(source = "product.name", target = "productName"),
+            @Mapping(source = "productId.id", target = "idProduct"),
+            @Mapping(source = "productId.name", target = "productName"),
             @Mapping(source = "quantity", target = "quantity"),
             @Mapping(source = "price", target = "price"),
             @Mapping(source = "subtotal", target = "subtotal")

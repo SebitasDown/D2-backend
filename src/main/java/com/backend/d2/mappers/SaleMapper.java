@@ -35,8 +35,8 @@ public interface SaleMapper {
     // Métodos Auxiliares (Model -> ItemResponse)
 
     // Define cómo transformar un item del carrito en un item de respuesta de venta
-    @Mapping(source = "product.id", target = "productId")
-    @Mapping(source = "product.name", target = "productName")
+    @Mapping(source = "productId.id", target = "productId")
+    @Mapping(source = "productId.name", target = "productName")
     // quantity, price y subtotal se mapean solos porque se llaman igual
     SaleItemResponse toSaleItemResponse(ShoppingCarModel itemModel);
 }

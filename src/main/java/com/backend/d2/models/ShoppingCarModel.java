@@ -10,9 +10,9 @@ public class ShoppingCarModel {
 
     private Long id;
 
-    private Long productId;
+    private ProductModel productId;
 
-    private Long cashierId;
+    private UserModel cashierId;
 
     private Integer quantity;
 
@@ -25,14 +25,14 @@ public class ShoppingCarModel {
     public ShoppingCarModel() {
     }
 
-    public ShoppingCarModel(Long id, Long productId, Long cashierId, Integer quantity, BigDecimal price, BigDecimal subtotal, Long saleId) {
+    public ShoppingCarModel(Long id, ProductModel productId, UserModel cashierId, Integer quantity, BigDecimal subtotal, Long saleId, BigDecimal price) {
         this.id = id;
         this.productId = productId;
         this.cashierId = cashierId;
         this.quantity = quantity;
-        this.price = price;
         this.subtotal = subtotal;
         this.saleId = saleId;
+        this.price = price;
     }
 
     public Long getId() {
@@ -43,19 +43,19 @@ public class ShoppingCarModel {
         this.id = id;
     }
 
-    public Long getProductId() {
+    public ProductModel getProductId() {
         return productId;
     }
 
-    public void setProductId(Long productId) {
+    public void setProductId(ProductModel productId) {
         this.productId = productId;
     }
 
-    public Long getCashierId() {
+    public UserModel getCashierId() {
         return cashierId;
     }
 
-    public void setCashierId(Long cashierId) {
+    public void setCashierId(UserModel cashierId) {
         this.cashierId = cashierId;
     }
 
@@ -65,14 +65,6 @@ public class ShoppingCarModel {
 
     public void setQuantity(Integer quantity) {
         this.quantity = quantity;
-    }
-
-    public BigDecimal getPrice() {
-        return price;
-    }
-
-    public void setPrice(BigDecimal price) {
-        this.price = price;
     }
 
     public BigDecimal getSubtotal() {
@@ -89,5 +81,13 @@ public class ShoppingCarModel {
 
     public void setSaleId(Long saleId) {
         this.saleId = saleId;
+    }
+
+    public BigDecimal getPrice() {
+        return price;
+    }
+
+    public void setPrice(BigDecimal price) {
+        this.price = price;
     }
 }
