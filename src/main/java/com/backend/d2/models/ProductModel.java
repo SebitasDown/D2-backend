@@ -6,9 +6,9 @@ public class ProductModel {
 
     private Long id;
 
-    private Category category;
+    private CategoryModel category;
 
-    private Supplier supplier;
+    private SupplierModel supplier;
 
     private String name;
 
@@ -23,7 +23,7 @@ public class ProductModel {
     public ProductModel() {
     }
 
-    public ProductModel(Long id, Category category, Supplier supplier, String name, String barcode, double price, int stock, String description) {
+    public ProductModel(Long id, CategoryModel category, SupplierModel supplier, String name, String barcode, double price, int stock, String description) {
         this.id = id;
         this.category = category;
         this.supplier = supplier;
@@ -42,19 +42,19 @@ public class ProductModel {
         this.id = id;
     }
 
-    public Category getCategory() {
+    public CategoryModel getCategory() {
         return category;
     }
 
-    public void setCategory(Category category) {
+    public void setCategory(CategoryModel category) {
         this.category = category;
     }
 
-    public Supplier getSupplier() {
+    public SupplierModel getSupplier() {
         return supplier;
     }
 
-    public void setSupplier(Supplier supplier) {
+    public void setSupplier(SupplierModel supplier) {
         this.supplier = supplier;
     }
 

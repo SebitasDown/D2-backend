@@ -1,6 +1,7 @@
 package com.backend.d2.repositories.impl;
 
 import com.backend.d2.entity.ProductEntity;
+import com.backend.d2.exceptions.BusinessException;
 import com.backend.d2.mappers.ProductMapper;
 import com.backend.d2.models.ProductModel;
 import com.backend.d2.repositories.interfaces.ProductRepositoryInterface;
@@ -23,7 +24,7 @@ public class ProductRepositoryImpl implements ProductRepositoryInterface {
 
         // Validacion del barcode ya existe en la base de datos
         if (jpaProductRepository.existsByBarcode(productModel.getBarcode())) {
-            throw new IllegalArgumentException("CONFLICT", "Ya existe un Barcode"); // Este error tiene que manejarse diferente
+            throw new BusinessException("CONFLICT", "Ya existe un Barcode");
         }
         // Mapeo para insertar a la base de datos
         ProductEntity productEntity = ProductMapper.INSTANCE.toEntity(productModel);
@@ -42,7 +43,7 @@ public class ProductRepositoryImpl implements ProductRepositoryInterface {
     public ProductModel update(ProductModel productModel) {
 
         if (jpaProductRepository.existsByBarcode(productModel.getBarcode())) {
-            throw new IllegalArgumentException("CONFLICT", "Ya existe un Barcode"); // Este error tiene que manejarse diferente
+            throw new BusinessException("CONFLICT", "Ya existe un Barcode");
         }
 
         ProductEntity productEntity = ProductMapper.INSTANCE.toEntity(productModel);
