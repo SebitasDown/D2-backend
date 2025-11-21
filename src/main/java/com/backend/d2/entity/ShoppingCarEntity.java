@@ -19,20 +19,16 @@ public class ShoppingCarEntity {
     // FK a la venta (puede ser null hasta finalizar)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_sale", referencedColumnName = "id_sale")
-    private Sale sale;
+    private SaleEntity sale;
 
     // FK al producto (obligatorio)
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "id_product", referencedColumnName = "id_product", nullable = false)
     private ProductEntity product;
 
-    // FK al usuario (pero sin usar UserEntity)
+    // ID del cajero (hasta que exista UserEntity)
     @Column(name = "id_cashier", nullable = false)
     private Long cashierId;
-    //Cambiar cuando UserEntity esté creado
-    //@ManyToOne(...)
-    //private User cashier;
-
 
     @Column(nullable = false)
     private Integer quantity;
@@ -42,7 +38,4 @@ public class ShoppingCarEntity {
 
     @Column(nullable = false)
     private BigDecimal subtotal;
-}
-
-
 }
