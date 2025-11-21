@@ -5,22 +5,22 @@ import com.backend.d2.dtos.sales.requests.UpdatePaymentMethod;
 import com.backend.d2.dtos.sales.responses.ProcessSaleResponse;
 import com.backend.d2.dtos.sales.responses.SaleResponse;
 import com.backend.d2.entity.PaymentMethod;
-import com.backend.d2.entity.SaleEntity;
+import com.backend.d2.entity.Role;
 import com.backend.d2.exceptions.BadRequestException;
 import com.backend.d2.exceptions.ResourceNotFoundException;
 import com.backend.d2.mappers.SaleMapper;
-// import com.backend.d2.models.ShoppingCarModel;
 import com.backend.d2.models.ProductModel;
 import com.backend.d2.models.SaleModel;
-//import com.backend.d2.models.ShoppingCar;
-//import com.backend.d2.models.User;
-// import com.backend.d2.models.UserModel;
-import com.backend.d2.repositories.interfaces.ProductRepositoryInterface;
+import com.backend.d2.models.ShoppingCarModel;
+import com.backend.d2.models.UserModel;
 import com.backend.d2.repositories.interfaces.ISaleRepository;
-//import com.backend.d2.repositories.interfaces.IShoppingCarRepository;
-//import com.backend.d2.repositories.interfaces.IUserRepository;
+import com.backend.d2.repositories.interfaces.IShoppingCarRepository;
+import com.backend.d2.repositories.interfaces.IUserRepository;
+import com.backend.d2.repositories.interfaces.ProductRepositoryInterface;
 import com.backend.d2.services.interfaces.ISaleService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,98 +30,91 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-@RequiredArgsConstructor // Inyecta todas las dependencias (final)
+@RequiredArgsConstructor
 public class SaleServiceImpl implements ISaleService {
 
-    // Inyección de Dependencias
     private final ISaleRepository saleRepository;
-    // private final IShoppingCarRepository shoppingCarRepository;
+    private final IShoppingCarRepository shoppingCarRepository;
     private final ProductRepositoryInterface productRepository;
-    // private final IUserRepository userRepository;
+    private final IUserRepository userRepository;
     private final SaleMapper saleMapper;
 
     @Override
-    @Transactional // Si algo falla, revierte todos los cambios en la BD
+    @Transactional
     public ProcessSaleResponse processSale(ProcessSaleRequest request, Long cashierId) {
 
-        // Task-001: Obtener carrito actual del usuario (cashierId)
-//        List<ShoppingCar> cartItems = shoppingCarRepository.findByCashierIdAndSaleIsNull(cashierId);
-//
-//        // Task-001: Validar que el carrito no este vacío
-//        if (cartItems.isEmpty()) {
-//            throw new BadRequestException("The cart is empty");
-//        }
+        UserModel cashier = userRepository.findById(cashierId)
+                .orElseThrow(() -> new ResourceNotFoundException("Cashier not found with ID: " + cashierId));
 
-        // Task-001: Validar stock de todos los productos del carrito
-//        for (ShoppingCar item : cartItems) {
-//            Product product = item.getProduct();
-//            if (product.getStock() < item.getQuantity()) {
-//                throw new BadRequestException("Insufficient stock for the product: " + product.getName());
-//            }
-//        }
+        // Task-001: Obtener carrito actual del usuario (usando ShoppingCarModel)
+        List<ShoppingCarModel> cartItems = shoppingCarRepository.findByCashierIdAndSaleIsNull(cashierId);
 
-        // Task-001: Calcular el total del carrito (suma de subtotales)
-//        BigDecimal total = cartItems.stream()
-//                .map(ShoppingCar::getSubtotal)
-//                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        if (cartItems.isEmpty()) {
+            throw new BadRequestException("The cart is empty");
+        }
 
-        // Obtener el cajero (Entity)
-//        User cashier = userRepository.findById(cashierId)
-//                .orElseThrow(() -> new ResourceNotFoundException("Cashier not found"));
+        // Validar stock y calcular total
+        BigDecimal total = BigDecimal.ZERO;
 
-        // Task-001: Crear registro en la tabla sale
+        for (ShoppingCarModel item : cartItems) {
+            ProductModel product = productRepository.findById(item.getProductId())
+                    .orElseThrow(() -> new ResourceNotFoundException("product not found with ID: " + item.getProductId()));
 
-        // Crear el MODELO de negocio (SaleModel)
-//        Sale newSale = new Sale();
+            if (product.getStock() < item.getQuantity()) {
+                throw new BadRequestException("Insufficient stock for the product: " + product.getName());
+            }
 
-//        newSale.setCashier(cashier);
-//        newSale.setTotal(total);
-//        newSale.setCashMethod(request.getCashMethod());
-//        newSale.setPurchaseDate(LocalDate.now());
-//        newSale.setCancelled(false);
-//
-         // Guarda usando el repositorio que acepta y devuelve los modelos
-//        Sale savedSale = saleRepository.save(newSale);
+            total = total.add(item.getSubtotal());
+        }
 
-        // Task-001: Actualizar Stock y Asociar carrito a venta
-//        for (ShoppingCar item : cartItems) {
-//            Product product = item.getProduct();
-//            product.setStock(product.getStock() - item.getQuantity());
-//            productRepository.save(product); // Guarda el stock actualizado
-//            item.setSale(savedSale); // Asocia el item del carrito a la nueva venta
-//        }
-//        shoppingCarRepository.saveAll(cartItems); // Guarda los cambios en el carrito
+        // Crear y Guardar la Venta
+        SaleModel newSale = new SaleModel();
+        newSale.setCashier(cashier);
+        newSale.setTotal(total);
+        newSale.setCashMethod(request.getCashMethod() != null ? request.getCashMethod() : PaymentMethod.CASH);
+        newSale.setPurchaseDate(LocalDate.now());
+        newSale.setCancelled(false);
 
-        // Task-001: Retornar venta creada con numero y cambio
-//        BigDecimal change = BigDecimal.ZERO;
-//        if (newSale.getCashMethod() == PaymentMethod.CASH) {
-//            if (request.getAmountPaid() == null || request.getAmountPaid().compareTo(total) < 0) {
-//                // Si el pago es en efectivo y el monto es insuficiente, revertimos todo
-//                throw new BadRequestException("The amount paid is insufficient for cash payment");
-//            }
-//            change = request.getAmountPaid().subtract(total);
-//        }
+        SaleModel savedSale = saleRepository.save(newSale);
 
-        // Retorna un DTO usando el Mapper (Model -> Response)
-        // Usamos el Mapper para convertir la Entidad a un DTO de respuesta
-//        return new ProcessSaleResponse(
-//                savedSale.getId(),
-//                change,
-//                saleMapper.toSaleResponse(savedSale) // Usamos el mapper
-//        );
-        return null;
+        // Actualizar Stock y Vincular Carrito a la Venta
+        for (ShoppingCarModel item : cartItems) {
+            ProductModel product = productRepository.findById(item.getProductId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+
+            product.setStock(product.getStock() - item.getQuantity());
+            productRepository.save(product);
+
+            // Vinculamos el ID de la venta al item
+            item.setSaleId(savedSale.getId());
+        }
+
+        // Guardamos los cambios en el carrito (ahora vinculados a la venta)
+        shoppingCarRepository.saveAll(cartItems);
+
+        // Calcular cambio
+        BigDecimal change = BigDecimal.ZERO;
+        if (newSale.getCashMethod() == PaymentMethod.CASH) {
+            if (request.getAmountPaid() == null || request.getAmountPaid().compareTo(total) < 0) {
+                throw new BadRequestException("The amount paid is insufficient");
+            }
+            change = request.getAmountPaid().subtract(total);
+        }
+
+        return new ProcessSaleResponse(
+                savedSale.getId(),
+                change,
+                saleMapper.toSaleResponse(savedSale)
+        );
     }
 
     @Override
     @Transactional
     public SaleResponse cancelSale(Long saleId, Long userId) {
 
-        // Task-002: Validar que venta existe
-        // Buscamos el MODELO
         SaleModel sale = saleRepository.findById(saleId)
                 .orElseThrow(() -> new ResourceNotFoundException("Sale not found"));
 
-        // Task-002: Validar que sea del mismo dia
         if (!sale.getPurchaseDate().equals(LocalDate.now())) {
             throw new BadRequestException("Only same-day sales can be cancelled");
         }
@@ -130,135 +123,117 @@ public class SaleServiceImpl implements ISaleService {
             throw new BadRequestException("The sale has already been cancelled");
         }
 
-        // Task-002: Obtener productos de la venta
-//        List<ShoppingCar> saleItems = shoppingCarRepository.findBySaleId(saleId);
+        List<ShoppingCarModel> saleItems = shoppingCarRepository.findBySaleId(saleId);
 
-        // Task-002: Revertir Stock
-//        for (ShoppingCar item : saleItems) {
-//            Product product = item.getProduct();
-//            product.setStock(product.getStock() + item.getQuantity());
-//            productRepository.save(product);
-//        }
+        // Revertir Stock
+        for (ShoppingCarModel item : saleItems) {
+            ProductModel product = productRepository.findById(item.getProductId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 
-        // Task-002: Actualizar venta
+            product.setStock(product.getStock() + item.getQuantity());
+            productRepository.save(product);
+        }
+
         sale.setCancelled(true);
         SaleModel updatedSale = saleRepository.save(sale);
 
-        // Task-002: Retornar la venta actualizada (usando el mapper)
         return saleMapper.toSaleResponse(updatedSale);
-
     }
 
     @Override
     @Transactional
     public SaleResponse updatePaymentMethod(Long saleId, UpdatePaymentMethod dto, Long userId) {
 
-        // Task-003: Validar que la venta existe
         SaleModel sale = saleRepository.findById(saleId)
                 .orElseThrow(() -> new ResourceNotFoundException("Sale not found"));
 
-        // Task-003: Validar que sea venta del mismo dia
         if (!sale.getPurchaseDate().equals(LocalDate.now())) {
             throw new BadRequestException("You can only update the payment method for same-day sales");
         }
 
-        // Task-003: Actualizar cash_method en sale
         sale.setCashMethod(dto.getNewPaymentMethod());
         SaleModel updatedSale = saleRepository.save(sale);
 
-        // Task-003: Retornar venta actualizada (usando el mapper)
         return saleMapper.toSaleResponse(updatedSale);
-
     }
 
     @Override
-    @Transactional(readOnly = true) // 'readOnly' optimiza las consultas de solo lectura
-    public List<SaleResponse> listSales(String searchTerm) {
-
-        // Task-004: Filtrar Lista de ventas (Buscador) y JOIN con user
-        List<SaleModel> sales;
+    @Transactional(readOnly = true)
+    public Page<SaleResponse> listSales(String searchTerm, Pageable pageable) {
+        Page<SaleModel> salesPage;
         if (searchTerm == null || searchTerm.isBlank()) {
-            sales = saleRepository.findAllSalesWithCashier(); // Query Optimizada
+            salesPage = saleRepository.findAllSalesWithCashier(pageable);
         } else {
-            sales = saleRepository.searchSalesWithCashier(searchTerm.trim()); // Query de Búsqueda
+            salesPage = saleRepository.searchSalesWithCashier(searchTerm.trim(), pageable);
         }
-
-        // Task-004: Retornar array (mapeado a DTO)
-        return saleMapper.toSaleResponseList(sales);
-
+        return salesPage.map(saleMapper::toSaleResponse);
     }
 
-//    @Override
-//    @Transactional(readOnly = true)
-//    public SaleResponse getSaleById(Long saleId, User currentUser) {
-//        // Task-005: Buscar venta por id
-//        Optional<SaleModel> saleOpt;
-//
-//        // Task-005: MANAGER/ADMIN pueden ver cualquier venta
-//        if (currentUser.getRole() == User.Role.ADMIN || currentUser.getRole() == User.Role.MANAGER) {
-//            saleOpt = saleRepository.findById(saleId);
-//        }
-//        // Task-005: CASHIER solo ve las ventas realizadas por el
-//        else if (currentUser.getRole() == User.Role.CASHIER) {
-//            saleOpt = saleRepository.findByIdAndCashierId(saleId, currentUser.getId());
-//        }
-//        else {
-//            throw new BadRequestException("Access denied. Role not recognized");
-//        }
-//
-//        SaleModel sale = saleOpt
-//            .orElseThrow(() -> new ResourceNotFoundException("Sale not found or you do not have permission to view it"));
-//
-//        return saleMapper.toSaleResponse(sale);
-//    }
-//
-//    @Override
-//    @Transactional
-//    public void deleteSale(Long saleId, User currentUser) {
-//        // Task-006: Validar que solo ADMIN PUEDA EJECUTAR
-//        if (currentUser.getRole() != User.Role.ADMIN) {
-//            throw new BadRequestException("Access denied. Only ADMIN can delete sales");
-//        }
-//
-//        SaleModel sale = saleRepository.findById(saleId)
-    //                .orElseThrow(() -> new ResourceNotFoundException("Sale not found"));
-//
-//        // Task-006: Obtener productos de la venta
-//        List<ShoppingCar> saleItems = shoppingCarRepository.findBySaleId(saleId);
-//
-//        // Task-006: Revertir Stock (si la venta no estaba ya cancelada)
-//        if (!sale.isCancelled()) {
-//            for (ShoppingCar item : saleItems) {
-//                Product product = item.getProduct();
-//                product.setStock(product.getStock() + item.getQuantity());
-//                productRepository.save(product);
-//            }
-//        }
-//
-//        shoppingCarRepository.deleteAll(saleItems);
-//        saleRepository.delete(sale);
-//    }
-//
-//    @Override
-//    @Transactional
-//    public SaleResponse updateSale(Long saleId, SaleResponse dto, User currentUser) {
-//        // Task-007: Validar que solo ADMIN puede ejecutar
-//        if (currentUser.getRole() != User.Role.ADMIN) {
-//            throw new BadRequestException("Acceso denegado. Solo ADMIN puede actualizar ventas.");
-//        }
-//
-//        SaleModel sale = saleRepository.findById(saleId)
-//                .orElseThrow(() -> new ResourceNotFoundException("Venta no encontrada."));
-//
-//        // Task-007: Actualizar campos en sale
-//        sale.setCashMethod(dto.getCashMethod());
-//        sale.setTotal(dto.getTotal()); // Como pide la Task-007 (Admin puede ajustar)
-//        sale.setCancelled(dto.isCancelled());
-//
-//        SaleModel updatedSale = saleRepository.save(sale);
-//
-//        // Task-007: Retornar venta actualizada
-//        return saleMapper.toSaleResponse(updatedSale);
-//    }
+    @Override
+    @Transactional(readOnly = true)
+    public SaleResponse getSaleById(Long saleId, UserModel currentUser) {
+        Optional<SaleModel> saleOpt;
 
+        if (currentUser.getRole() == Role.ADMIN || currentUser.getRole() == Role.MANAGER) {
+            saleOpt = saleRepository.findById(saleId);
+        }
+        else if (currentUser.getRole() == Role.CASHIER) {
+            saleOpt = saleRepository.findByIdAndCashierId(saleId, currentUser.getId());
+        }
+        else {
+            throw new BadRequestException("Access denied. Role not recognized");
+        }
+
+        SaleModel sale = saleOpt
+                .orElseThrow(() -> new ResourceNotFoundException("Sale not found or you do not have permission to view it"));
+
+        return saleMapper.toSaleResponse(sale);
+    }
+
+    @Override
+    @Transactional
+    public void deleteSale(Long saleId, UserModel currentUser) {
+        if (currentUser.getRole() != Role.ADMIN) {
+            throw new BadRequestException("Access denied. Only ADMIN can delete sales");
+        }
+
+        SaleModel sale = saleRepository.findById(saleId)
+                .orElseThrow(() -> new ResourceNotFoundException("Sale not found"));
+
+        List<ShoppingCarModel> saleItems = shoppingCarRepository.findBySaleId(saleId);
+
+        if (!sale.isCancelled()) {
+            for (ShoppingCarModel item : saleItems) {
+                Optional<ProductModel> productOpt = productRepository.findById(item.getProductId());
+                if (productOpt.isPresent()) {
+                    ProductModel product = productOpt.get();
+                    product.setStock(product.getStock() + item.getQuantity());
+                    productRepository.save(product);
+                }
+            }
+        }
+
+        // --- debo asegurarme de que tu repositorio soporte deleteAll con una lista de modelos
+        shoppingCarRepository.deleteAll(saleItems);
+        saleRepository.delete(sale);
+    }
+
+    @Override
+    @Transactional
+    public SaleResponse updateSale(Long saleId, SaleResponse dto, UserModel currentUser) {
+        if (currentUser.getRole() != Role.ADMIN) {
+            throw new BadRequestException("Access denied. Only ADMIN can update sales");
+        }
+
+        SaleModel sale = saleRepository.findById(saleId)
+                .orElseThrow(() -> new ResourceNotFoundException("Sale not found"));
+
+        sale.setCashMethod(dto.getCashMethod());
+        sale.setTotal(dto.getTotal());
+        sale.setCancelled(dto.isCancelled());
+
+        SaleModel updatedSale = saleRepository.save(sale);
+
+        return saleMapper.toSaleResponse(updatedSale);
+    }
 }

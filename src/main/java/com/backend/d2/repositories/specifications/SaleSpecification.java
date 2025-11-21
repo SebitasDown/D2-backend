@@ -39,6 +39,4 @@ public class SaleSpecification {
             return cb.conjunction(); // Retorna true (no filtra, solo carga datos)
         };
     }
-
-
 }

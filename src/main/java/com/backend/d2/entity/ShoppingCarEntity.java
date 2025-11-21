@@ -1,14 +1,16 @@
 package com.backend.d2.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 
-@Entity
-@Table(name = "shopping_car")
 @Data
+@Entity
+@AllArgsConstructor
 @NoArgsConstructor
+@Table(name = "shopping_car")
 public class ShoppingCarEntity {
 
     @Id
