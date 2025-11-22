@@ -12,59 +12,40 @@ import java.util.List;
 @Mapper(componentModel = "spring")
 public interface ShoppingCarMapper {
 
-    // =========================================
-    // ENTITY → MODEL
-    // =========================================
+    // ENTITY (Objetos) → MODEL (IDs)
     @Mappings({
-            @Mapping(source = "id", target = "id"),
+            // Extraemos los IDs de los objetos
             @Mapping(source = "product.id", target = "productId"),
-            @Mapping(source = "cashierId", target = "cashierId"),
-            @Mapping(source = "quantity", target = "quantity"),
-            @Mapping(source = "price", target = "price"),
-            @Mapping(source = "subtotal", target = "subtotal"),
+            @Mapping(source = "cashier.id", target = "cashierId"),
             @Mapping(source = "sale.id", target = "saleId")
     })
     ShoppingCarModel toModel(ShoppingCarEntity entity);
 
     List<ShoppingCarModel> toModelList(List<ShoppingCarEntity> entities);
 
-
-    // =========================================
-    // MODEL → ENTITY
-    // =========================================
+    // MODEL (IDs) → ENTITY (Objetos)
     @Mappings({
-            @Mapping(source = "id", target = "id"),
-            @Mapping(target = "product", ignore = true),  // se asigna en el service
-            @Mapping(source = "cashierId", target = "cashierId"),
-            @Mapping(source = "quantity", target = "quantity"),
-            @Mapping(source = "price", target = "price"),
-            @Mapping(source = "subtotal", target = "subtotal"),
-            @Mapping(target = "sale", ignore = true)       // se asigna en el service
+            // MapStruct creará: entity.setProduct(new ProductEntity(productId));
+            @Mapping(source = "productId", target = "product.id"),
+            @Mapping(source = "cashierId", target = "cashier.id"),
+            @Mapping(source = "saleId", target = "sale.id")
     })
     ShoppingCarEntity toEntity(ShoppingCarModel model);
 
     List<ShoppingCarEntity> toEntityList(List<ShoppingCarModel> models);
 
-
-    // =========================================
     // ENTITY → ShoppingCarItemResponse
-    // =========================================
     @Mappings({
             @Mapping(source = "id", target = "idShoppingCar"),
             @Mapping(source = "product.id", target = "idProduct"),
             @Mapping(source = "product.name", target = "productName"),
-            @Mapping(source = "quantity", target = "quantity"),
-            @Mapping(source = "price", target = "price"),
-            @Mapping(source = "subtotal", target = "subtotal")
+            // quantity, price, subtotal son automáticos
     })
     ShoppingCarItemResponse toItemResponse(ShoppingCarEntity entity);
 
     List<ShoppingCarItemResponse> toItemResponseList(List<ShoppingCarEntity> entities);
 
-
-    // =========================================
     // LISTA DE ENTITIES → ShoppingCarResponse
-    // =========================================
     default ShoppingCarResponse toShoppingCarResponse(List<ShoppingCarEntity> entities) {
 
         ShoppingCarResponse response = new ShoppingCarResponse();
@@ -74,11 +55,12 @@ public interface ShoppingCarMapper {
 
         response.setTotalItems(items.size());
 
+        // Calculamos el total sumando los subtotales
         BigDecimal total = entities.stream()
                 .map(ShoppingCarEntity::getSubtotal)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        response.setTotal(total);
+        response.setTotal(total != null ? total : BigDecimal.ZERO);
 
         return response;
     }
