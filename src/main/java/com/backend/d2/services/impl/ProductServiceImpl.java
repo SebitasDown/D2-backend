@@ -1,6 +1,5 @@
 package com.backend.d2.services.impl;
 
-import com.backend.d2.exceptions.BadRequestException;
 import com.backend.d2.exceptions.BusinessException;
 import com.backend.d2.models.CategoryModel;
 import com.backend.d2.models.ProductModel;
@@ -14,86 +13,100 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.Optional;
 
 @RequiredArgsConstructor
 @Service
 public class ProductServiceImpl implements ProductServiceInterface {
 
-    // Inyeccion de ProductRepositorio
     private final ProductRepositoryInterface productRepository;
-    // Inyeccion de Repositorio para Category y supplier
     private final CategoryRepositoryInterface categoryRepository;
     private final SupplierRepositoryInterface supplierRepository;
 
     @Override
     public ProductModel create(ProductModel productModel) {
 
-        //Manejo de errores globales (BusinessException)
-        if (productModel.getName() == null || productModel.getName().trim().isEmpty() || productModel.getBarcode() == null || productModel.getBarcode().trim().isEmpty() || productModel.getDescription() == null || productModel.getDescription().trim().isEmpty()){
-            throw new IllegalArgumentException("Error momentaneo - Este error es para validar que no esten vacios estos campos"); // Recordar Poner las excepciones globales
-        }
-        if(productModel.getPrice() <0 || productModel.getStock()< 0){
-            throw  new IllegalArgumentException("Error momentaneo");
-        }
-        if (productModel.getCategory() == null || productModel.getSupplier() == null){
-            throw new IllegalArgumentException("Valor null"); // errores momentaneos
+        // Validaciones básicas de campos vacíos
+        if (productModel.getName() == null || productModel.getName().trim().isEmpty() ||
+                productModel.getBarcode() == null || productModel.getBarcode().trim().isEmpty() ||
+                productModel.getDescription() == null || productModel.getDescription().trim().isEmpty()){
+            throw new BusinessException("BAD_REQUEST", "Los campos obligatorios no pueden estar vacíos");
         }
 
-        // Validacion de categoria
+        // price < 0 se convierte en price.compareTo(BigDecimal.ZERO) < 0
+        if (productModel.getPrice() != null && productModel.getPrice().compareTo(BigDecimal.ZERO) < 0) {
+            throw new BusinessException("BAD_REQUEST", "El precio no puede ser negativo");
+        }
+        if (productModel.getStock() < 0) {
+            throw new BusinessException("BAD_REQUEST", "El stock no puede ser negativo");
+        }
+
+        if (productModel.getCategory() == null || productModel.getSupplier() == null){
+            throw new BusinessException("BAD_REQUEST", "La categoría y el proveedor son obligatorios");
+        }
+
+        // Validación de categoria
         Long categoryId = productModel.getCategory().getId();
         CategoryModel category = categoryRepository.findById(categoryId)
-                .orElseThrow(() -> new BusinessException("NOT_FOUND", "No se encontro categoria"));
+                .orElseThrow(() -> new BusinessException("NOT_FOUND", "No se encontró la categoría con ID: " + categoryId));
         productModel.setCategory(category);
 
-        // Validacion del proveedor
+        // Validación del proveedor
         Long supplierId = productModel.getSupplier().getId();
         SupplierModel supplier = supplierRepository.findById(supplierId)
-                .orElseThrow(() -> new BusinessException("NOT_FOUND", "No se Encontro Ningun proveedor"));
+                .orElseThrow(() -> new BusinessException("NOT_FOUND", "No se encontró el proveedor con ID: " + supplierId));
         productModel.setSupplier(supplier);
 
-        // Manda a repositorio a traves de la inyeccion
         return productRepository.save(productModel);
     }
 
     @Override
     public ProductModel updated(ProductModel productModel) {
-        if (productModel.getName() == null || productModel.getName().trim().isEmpty() || productModel.getBarcode() == null || productModel.getBarcode().trim().isEmpty() || productModel.getDescription() == null || productModel.getDescription().trim().isEmpty()){
-            throw new BusinessException("BAD_REQUEST","No se permiten campos vacios"); // Recordar Poner las excepciones globales
-        }
-        if(productModel.getPrice() <0 || productModel.getStock()< 0){
-            throw  new BusinessException("BAD_REQUEST","No se permiten valores negativos");
-        }
-        if (productModel.getCategory() == null || productModel.getSupplier() == null){
-            throw new BusinessException("BAD_REQUEST","No se permiten campos vacios"); // errores momentaneos
-        }
+        // Validaciones básicas
         if (productModel.getId() == null){
-            throw new BusinessException("BAD_REQUEST","No se permiten campos vacios");
+            throw new BusinessException("BAD_REQUEST", "El ID del producto es necesario para actualizar");
+        }
+        if (productModel.getName() == null || productModel.getName().trim().isEmpty() ||
+                productModel.getBarcode() == null || productModel.getBarcode().trim().isEmpty()){
+            throw new BusinessException("BAD_REQUEST", "No se permiten campos vacíos");
         }
 
-        // Validacion si el producto existe
+        if (productModel.getPrice() != null && productModel.getPrice().compareTo(BigDecimal.ZERO) < 0) {
+            throw new BusinessException("BAD_REQUEST", "No se permiten precios negativos");
+        }
+        if (productModel.getStock() < 0) {
+            throw new BusinessException("BAD_REQUEST", "No se permite stock negativo");
+        }
+
+        // Buscar producto existente
         ProductModel exist = productRepository.findById(productModel.getId())
-                .orElseThrow(() -> new IllegalArgumentException("No encontrado")); // Error personalizado corregir
+                .orElseThrow(() -> new BusinessException("NOT_FOUND", "Producto no encontrado"));
 
-        // Validacion de categoria
-        Long categoryId = productModel.getCategory().getId();
-        CategoryModel category = categoryRepository.findById(categoryId)
-                .orElseThrow(() -> new BusinessException("NOT_FOUND","Categoria no encontrada"));
-        productModel.setCategory(category);
+        // Validar y actualizar categoría
+        if (productModel.getCategory() != null && productModel.getCategory().getId() != null) {
+            CategoryModel category = categoryRepository.findById(productModel.getCategory().getId())
+                    .orElseThrow(() -> new BusinessException("NOT_FOUND", "Categoría no encontrada"));
+            exist.setCategory(category);
+        }
 
-        // Validacion del proveedor
-        Long supplierId = productModel.getSupplier().getId();
-        SupplierModel supplier = supplierRepository.findById(supplierId)
-                .orElseThrow(() -> new BusinessException("NO_FOUND","No se Encontro Ningun proveedor"));
-        productModel.setSupplier(supplier);
+        // Validar y actualizar proveedor
+        if (productModel.getSupplier() != null && productModel.getSupplier().getId() != null) {
+            SupplierModel supplier = supplierRepository.findById(productModel.getSupplier().getId())
+                    .orElseThrow(() -> new BusinessException("NOT_FOUND", "Proveedor no encontrado"));
+            exist.setSupplier(supplier);
+        }
 
-        exist.setCategory(category);
-        exist.setSupplier(supplier);
+        // Actualizar campos
         exist.setName(productModel.getName());
         exist.setBarcode(productModel.getBarcode());
+
+        // Aquí no hay problema porque ambos son BigDecimal
         exist.setPrice(productModel.getPrice());
+
         exist.setStock(productModel.getStock());
         exist.setDescription(productModel.getDescription());
+
         return productRepository.update(exist);
     }
 
@@ -101,14 +114,14 @@ public class ProductServiceImpl implements ProductServiceInterface {
     public ProductModel deleteById(Long id) {
         Optional<ProductModel> encontrado = productRepository.findById(id);
         if (encontrado.isEmpty()) {
-            throw new BusinessException("NOT_FOUND","Producto no encontrado"); // Error temporal
+            throw new BusinessException("NOT_FOUND", "Producto no encontrado");
         }
         ProductModel product = encontrado.get();
 
         boolean eliminado = productRepository.deleteById(id);
 
         if (!eliminado) {
-            throw new BusinessException("BAD_REQUEST","No se pudo eliminar el producto");
+            throw new BusinessException("INTERNAL_ERROR", "No se pudo eliminar el producto");
         }
 
         return product;
@@ -117,51 +130,45 @@ public class ProductServiceImpl implements ProductServiceInterface {
     @Override
     public ProductModel findById(Long id) {
         return productRepository.findById(id)
-                .orElseThrow(() -> new BusinessException("NOT_FOUND","Producto no encontrado"));
+                .orElseThrow(() -> new BusinessException("NOT_FOUND", "Producto no encontrado"));
     }
 
     @Override
     public Page<ProductModel> findByName(String name, Pageable pageable) {
         Page<ProductModel> result = productRepository.findByName(name, pageable);
         if (result.isEmpty()){
-            throw new BusinessException("NOT_FOUND","No se encontro registro");
+            throw new BusinessException("NOT_FOUND", "No se encontraron productos con ese nombre");
         }
         return result;
     }
 
     @Override
     public Page<ProductModel> listAll(String name, Long categoryId, Long supplierId, Pageable pageable) {
-        // Implementacion de filtros
         return productRepository.findByFilters(name, categoryId, supplierId, pageable);
     }
 
-    // validaciones de stock para carrito
+    // Este metodo es auxiliar, no está en la interfaz, pero lo corregimos por si acaso
     public ProductModel checkStockAndUpdate(Long productId, int cantidad){
         ProductModel product = productRepository.findById(productId)
-                .orElseThrow(()-> new IllegalArgumentException("No hay suficiente stock")); // manejar diferente los errores
+                .orElseThrow(()-> new BusinessException("NOT_FOUND", "Producto no encontrado para validar stock"));
+
         if (product.getStock() < cantidad){
-            throw new BusinessException("BAD_REQUEST","No hay suficiente stock"); // Error personalizado
+            throw new BusinessException("BAD_REQUEST", "No hay suficiente stock. Disponible: " + product.getStock());
         }
         if(product.getStock() == 0) {
-            throw new BusinessException("BAD_REQUEST","Producto agotado");
+            throw new BusinessException("BAD_REQUEST", "Producto agotado");
         }
 
         int nuevoStock = product.getStock() - cantidad;
         product.setStock(nuevoStock);
 
         if (nuevoStock == 0) {
-            throw new BusinessException("CONFLICT", "El producto se quedó sin stock.");
-
+            // Podrías lanzar una advertencia o simplemente dejar pasar
         } else if (nuevoStock < 10) {
-            throw new BusinessException("BAD_REQUEST", "Stock bajo: solo quedan " + nuevoStock + " unidades.");
+            // Stock bajo warning
         }
 
-
         productRepository.save(product);
-
         return product;
-
     }
-
-
 }

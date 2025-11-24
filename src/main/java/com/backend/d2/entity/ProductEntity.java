@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.util.function.Supplier;
 
 @Data
@@ -32,7 +33,8 @@ public class ProductEntity {
 
     private String barcode;
 
-    private double price;
+    @Column(nullable = false)
+    private BigDecimal price;
 
     private int stock;
 

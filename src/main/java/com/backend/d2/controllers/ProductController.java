@@ -1,10 +1,8 @@
 package com.backend.d2.controllers;
 
-
 import com.backend.d2.dtos.products.request.ProductCreatedDTO;
 import com.backend.d2.dtos.products.responses.*;
 import com.backend.d2.mappers.ProductMapper;
-import com.backend.d2.mappers.SaleMapper;
 import com.backend.d2.models.ProductModel;
 import com.backend.d2.services.interfaces.ProductServiceInterface;
 import lombok.RequiredArgsConstructor;
@@ -14,100 +12,100 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-@Controller
-@RequestMapping("/product")
+@RestController
+@RequestMapping("/api/v1/products")
 @RequiredArgsConstructor
-public class ProductController{
+public class ProductController {
 
-    private final SaleMapper saleMapper;
+    // final es obligatorio para que @RequiredArgsConstructor inyecte el servicio
+    private final ProductServiceInterface productServiceInterface;
 
-    // inyeccion de Servicio
-    private ProductServiceInterface productServiceInterface;
+    // Inyectamos el Mapper
+    private final ProductMapper productMapper;
 
     // Metodo para agregar producto TASK-001
-    @PostMapping("/")
-    public ResponseEntity<ProductCreateResponseDTO> createProduct (@RequestBody ProductCreatedDTO createdDTO){
-        // Mappear de DTO a Modelo
-        ProductModel productModel = productServiceInterface.create(ProductMapper.INSTANCE.toModel(createdDTO));
-        // Mappeo de respuesta
-        ProductCreateResponseDTO response = ProductMapper.INSTANCE.toResponseCreateDTO(productModel);
-        // Recordar excepciones en el global (Service se encarga de mandar excepciones)
-        // Respuestas SOLO en DTO
+    @PostMapping
+    public ResponseEntity<ProductCreateResponseDTO> createProduct(@RequestBody ProductCreatedDTO createdDTO) {
+        // Mapear de DTO a Modelo usando la instancia inyectada
+        ProductModel productModel = productServiceInterface.create(productMapper.toModel(createdDTO));
+
+        // Mapeo de respuesta
+        ProductCreateResponseDTO response = productMapper.toResponseCreateDTO(productModel);
+
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    // Metdo para actualizar producto Con ROl (ADMIN)
+    // Metodo para actualizar producto Con Rol (ADMIN)
     // @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
-    public ResponseEntity<ProductUpdateResponseDTO> updateProduct (@PathVariable Long id, @RequestBody ProductCreatedDTO updatedDTO){
-      ProductModel productModel = ProductMapper.INSTANCE.toModel(updatedDTO);
-      productModel.setId(id);
+    public ResponseEntity<ProductUpdateResponseDTO> updateProduct(@PathVariable Long id, @RequestBody ProductCreatedDTO updatedDTO) {
+        ProductModel productModel = productMapper.toModel(updatedDTO);
+        productModel.setId(id);
 
-      ProductModel updated = productServiceInterface.updated(productModel);
+        ProductModel updated = productServiceInterface.updated(productModel);
 
-      ProductUpdateResponseDTO res = ProductMapper.INSTANCE.toResponseUpdatedDTO(updated);
+        ProductUpdateResponseDTO res = productMapper.toResponseUpdatedDTO(updated);
 
-      return ResponseEntity.status(HttpStatus.OK).body(res);
+        return ResponseEntity.ok(res);
     }
 
-    //Metodo para Eliminar un producto
-    //@PreAuthorize("hasRole('ADMIN')")
+    // Metodo para Eliminar un producto
+    // @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
-    public ResponseEntity<ProductResponseDeleteDTO> deleteProduct (@PathVariable Long id){
+    public ResponseEntity<ProductResponseDeleteDTO> deleteProduct(@PathVariable Long id) {
         ProductModel productModel = productServiceInterface.deleteById(id);
 
-        ProductResponseDeleteDTO response = new ProductResponseDeleteDTO(productModel.getName(),"producto eliminado");
+        // Asumo que tu DTO tiene este constructor según tu código anterior
+        ProductResponseDeleteDTO response = new ProductResponseDeleteDTO(
+                productModel.getName(),
+                "Producto eliminado exitosamente"
+        );
 
-        return ResponseEntity.status(HttpStatus.OK).body(response);
+        return ResponseEntity.ok(response);
     }
 
-    //Metodo para Buscar por ID
-    // Acceso por rol Con Usuarios (Spring Segurity)
+    // Metodo para Buscar por ID
     @GetMapping("/{id}")
-    public ResponseEntity<ProductGetByIdResponseDTO> getProduct (@PathVariable Long id){
+    public ResponseEntity<ProductGetByIdResponseDTO> getProduct(@PathVariable Long id) {
         ProductModel model = productServiceInterface.findById(id);
-
-        ProductGetByIdResponseDTO dto = ProductMapper.INSTANCE.toGetDTO(model);
-        return ResponseEntity.status(HttpStatus.OK).body(dto);
+        ProductGetByIdResponseDTO dto = productMapper.toGetDTO(model);
+        return ResponseEntity.ok(dto);
     }
-
 
     @GetMapping("/search")
     public ResponseEntity<Page<ProductSearchResponseDTO>> searchProduct(
             @RequestParam String name,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "name") String sortBy
-    ){
+            @RequestParam(defaultValue = "id") String sortBy // 'id' o 'name' son mejores defaults que 'name' repetido
+    ) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy));
 
         Page<ProductModel> found = productServiceInterface.findByName(name, pageable);
 
-        Page<ProductSearchResponseDTO> response =
-                found.map(ProductMapper.INSTANCE::toSearchDTO);
+        // Usamos referencia al método de la instancia inyectada
+        Page<ProductSearchResponseDTO> response = found.map(productMapper::toSearchDTO);
 
-        return ResponseEntity.status(HttpStatus.OK).body(response);
+        return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/list")
-    public ResponseEntity<Page<ProductSearchResponseDTO>> listProducts (
+    @GetMapping
+    public ResponseEntity<Page<ProductSearchResponseDTO>> listProducts(
             @RequestParam(required = false) String name,
             @RequestParam(required = false) Long categoryId,
             @RequestParam(required = false) Long supplierId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "name") String sortBy
-    ){
+            @RequestParam(defaultValue = "id") String sortBy
+    ) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy));
 
-        Page<ProductModel> pageModel =productServiceInterface.listAll(name, categoryId, supplierId, pageable);
+        Page<ProductModel> pageModel = productServiceInterface.listAll(name, categoryId, supplierId, pageable);
 
-        // Tambien se puede hacer asi
-      // Page<ProductSearchResponseDTO> pageResponseDTO = pageModel.map(model ->ProductMapper.INSTANCE.toSearchDTO(model));
-        Page<ProductSearchResponseDTO> pageResponseDTO = pageModel.map(ProductMapper.INSTANCE::toSearchDTO);
-        return ResponseEntity.status(HttpStatus.OK).body(pageResponseDTO);
+        Page<ProductSearchResponseDTO> pageResponseDTO = pageModel.map(productMapper::toSearchDTO);
+
+        return ResponseEntity.ok(pageResponseDTO);
     }
 }

@@ -11,8 +11,8 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
 
-// Mapper para Product
-@Mapper
+// Agregamos uses para que sepa cómo mapear las categorías y proveedores anidados
+@Mapper(componentModel = "spring", uses = {CategoryMapper.class, SupplierMapper.class})
 public interface ProductMapper {
 
     // Revisar Mappers a futuro Task:008 : Testing
@@ -22,7 +22,7 @@ public interface ProductMapper {
     // Combierte de un DTO a un modelo - Crear Producto
     @Mapping(source = "categoryId", target = "category.id")
     @Mapping(source = "supplierId", target = "supplier.id")
-    ProductModel toModel (ProductCreatedDTO dto);
+    ProductModel toModel(ProductCreatedDTO dto);
 
     // Comvierte de un Modelo a un DTO
     // Respuesta en DTO
