@@ -1,6 +1,6 @@
 package com.backend.d2.models;
 
-
+import java.math.BigDecimal;
 
 public class ProductModel {
 
@@ -14,7 +14,7 @@ public class ProductModel {
 
     private String barcode;
 
-    private double price;
+    private BigDecimal price;
 
     private int stock;
 
@@ -23,7 +23,7 @@ public class ProductModel {
     public ProductModel() {
     }
 
-    public ProductModel(Long id, CategoryModel category, SupplierModel supplier, String name, String barcode, double price, int stock, String description) {
+    public ProductModel(Long id, CategoryModel category, SupplierModel supplier, String name, String barcode, BigDecimal price, int stock, String description) {
         this.id = id;
         this.category = category;
         this.supplier = supplier;
@@ -74,11 +74,11 @@ public class ProductModel {
         this.barcode = barcode;
     }
 
-    public double getPrice() {
+    public BigDecimal getPrice() {
         return price;
     }
 
-    public void setPrice(double price) {
+    public void setPrice(BigDecimal price) {
         this.price = price;
     }
 

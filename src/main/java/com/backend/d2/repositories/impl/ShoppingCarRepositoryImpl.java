@@ -20,30 +20,22 @@ import java.util.stream.StreamSupport;
 public class ShoppingCarRepositoryImpl implements IShoppingCarRepository {
 
     private final JpaShoppingCarRepository jpaRepository;
-    private final ShoppingCarMapper mapper; // ¡Necesitamos el traductor!
+    private final ShoppingCarMapper mapper;
 
     @Override
     public ShoppingCarModel save(ShoppingCarModel model) {
-        // Traducir Modelo -> Entidad
         ShoppingCarEntity entity = mapper.toEntity(model);
-
         ShoppingCarEntity saved = jpaRepository.save(entity);
-
-        // Traducir Entidad Guardada -> Modelo
         return mapper.toModel(saved);
     }
 
     @Override
     public List<ShoppingCarModel> saveAll(Iterable<ShoppingCarModel> models) {
-        // Convertimos la lista de modelos a entidades
         List<ShoppingCarEntity> entities = StreamSupport.stream(models.spliterator(), false)
                 .map(mapper::toEntity)
                 .collect(Collectors.toList());
 
-        // Guardamos todas
         List<ShoppingCarEntity> savedEntities = jpaRepository.saveAll(entities);
-
-        // Convertimos la respuesta a modelos
         return mapper.toModelList(savedEntities);
     }
 
@@ -71,9 +63,20 @@ public class ShoppingCarRepositoryImpl implements IShoppingCarRepository {
     }
 
     @Override
+    public Page<ShoppingCarModel> findBySaleIdPaged(Long saleId, Pageable pageable) {
+        Page<ShoppingCarEntity> entityPage = jpaRepository.findBySaleId(saleId, pageable);
+        return entityPage.map(mapper::toModel);
+    }
+
+    @Override
     public void delete(ShoppingCarModel model) {
         ShoppingCarEntity entity = mapper.toEntity(model);
         jpaRepository.delete(entity);
+    }
+
+    @Override
+    public void deleteById(Long id) {
+        jpaRepository.deleteById(id);
     }
 
     @Override
@@ -87,12 +90,5 @@ public class ShoppingCarRepositoryImpl implements IShoppingCarRepository {
     @Override
     public boolean existsById(Long id) {
         return jpaRepository.existsById(id);
-    }
-
-    @Override
-    public Page<ShoppingCarModel> findBySaleIdPaged(Long saleId, Pageable pageable) {
-        Page<ShoppingCarEntity> entityPage = jpaRepository.findBySaleId(saleId, pageable);
-
-        return entityPage.map(mapper::toModel);
     }
 }

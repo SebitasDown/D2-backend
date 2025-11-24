@@ -26,11 +26,12 @@ public class ShoppingCarEntity {
     // FK al producto (obligatorio)
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "id_product", referencedColumnName = "id_product", nullable = false)
-    private ProductEntity productId;
+    private ProductEntity product;
 
-    // ID del cajero (hasta que exista UserEntity)
-    @Column(name = "id_cashier", nullable = false)
-    private UserEntity cashierId;
+    // FK al cajero. Usamos UserEntity.
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "id_cashier", referencedColumnName = "id_user", nullable = false)
+    private UserEntity cashier;
 
     @Column(nullable = false)
     private Integer quantity;

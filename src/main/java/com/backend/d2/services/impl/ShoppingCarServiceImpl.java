@@ -1,20 +1,18 @@
 package com.backend.d2.services.impl;
 
-import com.backend.d2.entity.ProductEntity;
-import com.backend.d2.entity.SaleEntity;
-import com.backend.d2.entity.ShoppingCarEntity;
-import com.backend.d2.mappers.ShoppingCarMapper;
+import com.backend.d2.exceptions.BadRequestException;
+import com.backend.d2.exceptions.ResourceNotFoundException;
 import com.backend.d2.models.ProductModel;
 import com.backend.d2.models.ShoppingCarModel;
-import com.backend.d2.repositories.interfaces.ProductRepositoryInterface;
-import com.backend.d2.repositories.interfaces.jpa.JpaShoppingCarRepository;
-import com.backend.d2.repositories.interfaces.jpa.JpaSaleRepository;
+import com.backend.d2.repositories.interfaces.ISaleRepository; // Interfaz limpia
+import com.backend.d2.repositories.interfaces.IShoppingCarRepository; // Interfaz limpia
+import com.backend.d2.repositories.interfaces.ProductRepositoryInterface; // Interfaz limpia
 import com.backend.d2.services.interfaces.IShoppingCarService;
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -24,184 +22,161 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class ShoppingCarServiceImpl implements IShoppingCarService {
 
-    private final JpaShoppingCarRepository shoppingCarRepository;
+    // INYECCIÓN DE DEPENDENCIAS (Arquitectura Limpia)
+    private final IShoppingCarRepository shoppingCarRepository;
     private final ProductRepositoryInterface productRepository;
-    private final ShoppingCarMapper mapper;
-    private final JpaSaleRepository saleRepository;
+    private final ISaleRepository saleRepository;
 
-    // ============================================================
-    // Task 001: Agregar item
-    // ============================================================
+    // Task 001: Agregar item (Lógica con Modelos)
     @Override
+    @Transactional
     public ShoppingCarModel addItem(Long cashierId, Long productId, Integer quantity) {
 
-        // 1. Validar existencia del producto
+        // Validar existencia del producto (Modelo)
         ProductModel product = productRepository.findById(productId)
-                .orElseThrow(() -> new RuntimeException("Product not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 
-        // 2. Validar stock disponible
+        // Validar stock disponible
         if (product.getStock() < quantity) {
-            throw new RuntimeException("Not enough stock available");
+            throw new BadRequestException("Not enough stock available. Current: " + product.getStock());
         }
 
-        // 3. Verificar si ya existe item en carrito activo
-        Optional<ShoppingCarEntity> optionalItem =
-                shoppingCarRepository.findByCashierIdAndProductIdAndSaleIsNull(cashierId, productId);
+        // Verificar si ya existe item en carrito activo
+        Optional<ShoppingCarModel> optionalItem =
+                shoppingCarRepository.findActiveItemByCashierAndProduct(cashierId, productId);
 
-        ShoppingCarEntity item;
+        ShoppingCarModel item;
 
         if (optionalItem.isPresent()) {
-            // Ya existe → incrementar cantidad
+            // Ya existe -> incrementar cantidad
             item = optionalItem.get();
-
             int newQuantity = item.getQuantity() + quantity;
 
             if (newQuantity > product.getStock()) {
-                throw new RuntimeException("Not enough stock to increase quantity");
+                throw new BadRequestException("Not enough stock to increase quantity");
             }
 
             item.setQuantity(newQuantity);
+            // Recalcular subtotal
             item.setSubtotal(item.getPrice().multiply(BigDecimal.valueOf(newQuantity)));
 
         } else {
-            // No existe → crear uno nuevo
-            item = new ShoppingCarEntity();
-            item.setCashierId(cashierId);
-
-            // Convertir ProductModel → ProductEntity
-            ProductEntity productEntity = new ProductEntity();
-            productEntity.setId(product.getId());
-            productEntity.setName(product.getName());
-            productEntity.setPrice(product.getPrice());
-            productEntity.setStock(product.getStock());
-            productEntity.setBarcode(product.getBarcode());
-            productEntity.setDescription(product.getDescription());
-            // category y supplier si quieres luego los mapeamos
-
-            item.setProduct(productEntity);
+            // No existe -> crear uno nuevo (Modelo)
+            item = new ShoppingCarModel();
+            item.setCashierId(cashierId); // ID del usuario
+            item.setProductId(product.getId()); // ID del producto
             item.setQuantity(quantity);
-            item.setPrice(BigDecimal.valueOf(product.getPrice()));
-            item.setSubtotal(BigDecimal.valueOf(product.getPrice()).multiply(BigDecimal.valueOf(quantity)));
+            item.setPrice(product.getPrice()); // BigDecimal directo del modelo
+            item.setSubtotal(product.getPrice().multiply(BigDecimal.valueOf(quantity)));
+            item.setSaleId(null); // Aún no tiene venta asignada
         }
 
-        ShoppingCarEntity saved = shoppingCarRepository.save(item);
-
-        return mapper.toModel(saved);
+        // Guardar usando el repositorio que acepta Modelos
+        return shoppingCarRepository.save(item);
     }
 
     // ============================================================
     // Task 002: Actualizar cantidad
     // ============================================================
     @Override
+    @Transactional
     public ShoppingCarModel updateItem(Long itemId, Integer quantity) {
 
-        ShoppingCarEntity item = shoppingCarRepository.findById(itemId)
-                .orElseThrow(() -> new RuntimeException("Cart item not found"));
+        ShoppingCarModel item = shoppingCarRepository.findById(itemId)
+                .orElseThrow(() -> new ResourceNotFoundException("Cart item not found"));
 
-        ProductModel product = productRepository.findById(item.getProduct().getId())
-                .orElseThrow(() -> new RuntimeException("Product not found"));
+        ProductModel product = productRepository.findById(item.getProductId())
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 
         if (quantity > product.getStock()) {
-            throw new RuntimeException("Not enough stock");
+            throw new BadRequestException("Not enough stock");
         }
 
         item.setQuantity(quantity);
         item.setSubtotal(item.getPrice().multiply(BigDecimal.valueOf(quantity)));
 
-        ShoppingCarEntity saved = shoppingCarRepository.save(item);
-        return mapper.toModel(saved);
+        return shoppingCarRepository.save(item);
     }
 
-    // ============================================================
     // Task 003: Eliminar item
-    // ============================================================
     @Override
+    @Transactional
     public boolean deleteItem(Long itemId) {
         if (!shoppingCarRepository.existsById(itemId)) {
             return false;
         }
-
         shoppingCarRepository.deleteById(itemId);
         return true;
     }
 
-    // ============================================================
     // Task 004: Obtener carrito activo
-    // ============================================================
     @Override
+    @Transactional(readOnly = true)
     public List<ShoppingCarModel> getActiveCart(Long cashierId) {
-        List<ShoppingCarEntity> items =
-                shoppingCarRepository.findByCashierIdAndSaleIsNull(cashierId);
-
-        return mapper.toModelList(items);
+        return shoppingCarRepository.findByCashierIdAndSaleIsNull(cashierId);
     }
 
-    // ============================================================
     // Task 005: Vaciar carrito
-    // ============================================================
     @Override
+    @Transactional
     public void clearCart(Long cashierId) {
-        List<ShoppingCarEntity> items =
+        List<ShoppingCarModel> items =
                 shoppingCarRepository.findByCashierIdAndSaleIsNull(cashierId);
 
         shoppingCarRepository.deleteAll(items);
     }
 
-    // ============================================================
     // Task 006: Obtener carrito por venta
-    // ============================================================
     @Override
+    @Transactional(readOnly = true)
     public List<ShoppingCarModel> getCartBySale(Long saleId) {
-        List<ShoppingCarEntity> items = shoppingCarRepository.findBySaleId(saleId);
-        return mapper.toModelList(items);
+        return shoppingCarRepository.findBySaleId(saleId);
     }
 
-    // ============================================================
     // Task 007: Asociar carrito a una venta
-    // ============================================================
     @Override
+    @Transactional
     public void assignSaleToCart(Long cashierId, Long saleId) {
 
-        SaleEntity sale = saleRepository.findById(saleId)
-                .orElseThrow(() -> new RuntimeException("Sale not found"));
+        // Validamos que la venta exista (usando ISaleRepository)
+        if (saleRepository.findById(saleId).isEmpty()) {
+            throw new ResourceNotFoundException("Sale not found with ID: " + saleId);
+        }
 
-        List<ShoppingCarEntity> items =
+        // Obtenemos los items
+        List<ShoppingCarModel> items =
                 shoppingCarRepository.findByCashierIdAndSaleIsNull(cashierId);
 
-        for (ShoppingCarEntity item : items) {
-            item.setSale(sale);
+        // Asignamos el ID de la venta a los Modelos
+        for (ShoppingCarModel item : items) {
+            item.setSaleId(saleId);
         }
 
         shoppingCarRepository.saveAll(items);
     }
 
     @Override
+    @Transactional
     public ShoppingCarModel updatePrice(Long itemId, BigDecimal newPrice) {
 
-        ShoppingCarEntity item = shoppingCarRepository.findById(itemId)
-                .orElseThrow(() -> new RuntimeException("Cart item not found"));
+        ShoppingCarModel item = shoppingCarRepository.findById(itemId)
+                .orElseThrow(() -> new ResourceNotFoundException("Cart item not found"));
 
         if (newPrice.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new RuntimeException("Price must be positive");
+            throw new BadRequestException("Price must be positive");
         }
 
         item.setPrice(newPrice);
         item.setSubtotal(newPrice.multiply(BigDecimal.valueOf(item.getQuantity())));
 
-        ShoppingCarEntity saved = shoppingCarRepository.save(item);
-
-        return mapper.toModel(saved);
+        return shoppingCarRepository.save(item);
     }
 
-    // ============================================================
     // Task 010: Paginación
-    // ============================================================
     @Override
+    @Transactional(readOnly = true)
     public Page<ShoppingCarModel> getItemsBySalePaged(Long saleId, Pageable pageable) {
-
-        Page<ShoppingCarEntity> page =
-                shoppingCarRepository.findBySaleId(saleId, pageable);
-
-        return page.map(mapper::toModel);
+        // Usamos el metodo específico que creamos en el repositorio para paginación
+        return shoppingCarRepository.findBySaleIdPaged(saleId, pageable);
     }
 }
