@@ -11,32 +11,24 @@ import org.mapstruct.factory.Mappers;
 
 import java.util.List;
 
-// "uses" conecta este mapper con los otros que ya creaste
 @Mapper(componentModel = "spring", uses = {UserMapper.class, ShoppingCarMapper.class})
 public interface SaleMapper {
 
     SaleMapper INSTANCE = Mappers.getMapper(SaleMapper.class);
 
-    // ENTITY (BD) <-> MODEL (Negocio)
-
-    // Al usar 'ShoppingCarMapper', MapStruct sabe convertir la lista automáticamente
+    // ENTITY <-> MODEL
     SaleEntity toEntity(SaleModel model);
     SaleModel toModel(SaleEntity entity);
 
-    // MODEL (Negocio) -> DTO (Respuesta API)
-
-    // MapStruct usará UserMapper para convertir UserModel -> UserResponseDTO si fuera necesario
+    // MODEL -> RESPONSE DTO
     @Mapping(source = "cashier.name", target = "cashierName")
     @Mapping(source = "saleItems", target = "items")
     SaleResponse toSaleResponse(SaleModel model);
 
     List<SaleResponse> toSaleResponseList(List<SaleModel> models);
 
-    // Métodos Auxiliares (Model -> ItemResponse)
-
-    // Define cómo transformar un item del carrito en un item de respuesta de venta
-    @Mapping(source = "productId.id", target = "productId")
-    @Mapping(source = "productId.name", target = "productName")
-    // quantity, price y subtotal se mapean solos porque se llaman igual
+    // Usamos el campo String 'productName' directo del modelo
+    @Mapping(source = "productId", target = "productId")
+    @Mapping(source = "productName", target = "productName")
     SaleItemResponse toSaleItemResponse(ShoppingCarModel itemModel);
 }

@@ -7,7 +7,7 @@ import com.backend.d2.models.SupplierModel;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
 
-@Mapper
+@Mapper(componentModel = "spring")
 public interface SupplierMapper {
 
     SupplierMapper INSTANCE = Mappers.getMapper(SupplierMapper.class);
